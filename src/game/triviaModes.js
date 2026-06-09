@@ -2,6 +2,7 @@ import { foodCards } from './foodCards.js'
 import { scamCards } from './scamCards.js'
 import { quickMathCards } from './quickMath.js'
 import { weirdFactsCards } from './weirdFacts.js'
+import { animalFactsCards } from './animalFacts.js'
 
 export const TRIVIA_MODES = {
   food: {
@@ -72,11 +73,28 @@ export const TRIVIA_MODES = {
       instruction: 'Swipe left for No Way. Swipe right for True.',
     },
   },
+  animal: {
+    id: 'animal',
+    title: 'Animal Facts',
+    shortTitle: 'Animal Facts',
+    subtitle: 'Wild animal claims. Decide if each one is for real or nope.',
+    description: 'Wild animal claims. Swipe For Real or Nope.',
+    takeaway: 'Animals are stranger than fiction — and plenty of “facts” are myths.',
+    icon: '🦊',
+    answerType: 'binary',
+    cards: animalFactsCards,
+    labels: {
+      right: 'For Real',
+      left: 'Nope',
+      rightValue: 'true',
+      leftValue: 'false',
+      instruction: 'Swipe left for Nope. Swipe right for For Real.',
+    },
+  },
 }
 
 /** Decks shown as "Coming soon" — visible but not playable yet. */
 export const COMING_SOON_DECKS = [
-  { id: 'animal', title: 'Animal Facts', shortTitle: 'Animal Facts', icon: '🦊', description: 'Coming soon' },
   { id: 'history', title: 'History Hits', shortTitle: 'History Hits', icon: '🏛️', description: 'Coming soon' },
   { id: 'science', title: 'Science Snacks', shortTitle: 'Science Snacks', icon: '🔬', description: 'Coming soon' },
 ]

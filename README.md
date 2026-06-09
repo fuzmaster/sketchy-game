@@ -37,7 +37,8 @@ build streaks — and pick up something useful along the way.
 | Scam Spotter | ✅ Playable | swipe: Sketchy ⟵ / ⟶ Legit |
 | Quick Math | ✅ Playable | multiple-choice (tap / keys 1–4) |
 | Weird Facts | ✅ Playable | swipe: No Way ⟵ / ⟶ True (sourced facts) |
-| Animal Facts · History Hits · Science Snacks | 🔜 Coming soon | — |
+| Animal Facts | ✅ Playable | swipe: Nope ⟵ / ⟶ For Real (sourced facts) |
+| History Hits · Science Snacks | 🔜 Coming soon | — |
 
 Card model supports `answerType: 'binary' | 'multiple-choice'` (with
 `math-input` reserved for later), optional tiny `graphic`, and source fields.
