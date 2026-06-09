@@ -3,6 +3,24 @@ import { TRIVIA_MODES } from './game/triviaModes.js'
 import { cardDuration, FEEDBACK_HOLD, MAX_HEARTS, STORAGE_KEYS, SWIPE_THRESHOLD } from './game/rules.js'
 import { scoreForCorrect } from './game/scoring.js'
 import { shuffle } from './utils/shuffle.js'
+import { comboLabelFor } from './game/comboMilestones.js'
+import { validateDeck } from './game/deckValidation.js'
+import { chooseCardsAvoidingSeen, markCardsSeen } from './game/seenCards.js'
+import {
+  isSoundEnabled,
+  playCorrect,
+  playDeckSelect,
+  playGameOver,
+  playHeartLost,
+  playPause,
+  playResume,
+  playStreak,
+  playTap,
+  playTimeout,
+  playWrong,
+  setSoundEnabled,
+  unlockAudio,
+} from './audio/sfx.js'
 import { StartScreen } from './components/StartScreen.jsx'
 import { TutorialOverlay } from './components/TutorialOverlay.jsx'
 import { GameScreen } from './components/GameScreen.jsx'
@@ -49,9 +67,9 @@ export default function App() {
     () => localStorage.getItem(STORAGE_KEYS.activeProfile) || loadProfiles()[0].id,
   )
   const [modeId, setModeId] = useState('food')
-  const [difficulty, setDifficulty] = useState('easy')
+  const [difficulty, setDifficulty] = useState('normal')
   const mode = TRIVIA_MODES[modeId]
-  const [deck, setDeck] = useState(() => shuffle(mode.cards))
+  const [deck, setDeck] = useState(() => shuffle(mode.cards.filter((card) => card.confidence === 'high')))
   const [cardIndex, setCardIndex] = useState(0)
   const [hearts, setHearts] = useState(MAX_HEARTS)
   const [score, setScore] = useState(0)
@@ -59,6 +77,8 @@ export default function App() {
   const [stats, setStats] = useState(() => freshStats())
   const [results, setResults] = useState([])
   const [feedback, setFeedback] = useState(null)
+  const [comboBadge, setComboBadge] = useState(null)
+  const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled())
   const [timerResetKey, setTimerResetKey] = useState(0)
 
   const actionLocked = useRef(false)
@@ -85,6 +105,27 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    const unlock = () => {
+      unlockAudio()
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
+    }
+    window.addEventListener('pointerdown', unlock)
+    window.addEventListener('keydown', unlock)
+    return () => {
+      window.removeEventListener('pointerdown', unlock)
+      window.removeEventListener('keydown', unlock)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    Object.values(TRIVIA_MODES).forEach((triviaMode) => {
+      validateDeck(triviaMode.cards, { deckId: triviaMode.id })
+    })
+  }, [])
+
+  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.activeProfile, activeProfileId)
   }, [activeProfileId])
 
@@ -107,7 +148,25 @@ export default function App() {
   }
 
   function selectProfile(profileId) {
+    playTap()
     setActiveProfileId(profileId)
+  }
+
+  function changeMode(nextModeId) {
+    playDeckSelect()
+    setModeId(nextModeId)
+  }
+
+  function changeDifficulty(nextDifficulty) {
+    playDeckSelect()
+    setDifficulty(nextDifficulty)
+  }
+
+  function toggleSound() {
+    const next = !soundEnabled
+    setSoundEnabled(next)
+    setSoundEnabledState(next)
+    if (next) playTap()
   }
 
   function resetTimerLock() {
@@ -117,9 +176,12 @@ export default function App() {
   }
 
   function startRun() {
+    unlockAudio()
+    playTap()
     if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current)
     roundId.current += 1
-    const nextDeck = shuffle(mode.cards)
+    const launchCards = mode.cards.filter((card) => card.confidence === 'high')
+    const nextDeck = chooseCardsAvoidingSeen(launchCards, { profileId: activeProfile.id, deckId: modeId })
     setDeck(nextDeck)
     setCardIndex(0)
     setHearts(MAX_HEARTS)
@@ -128,6 +190,7 @@ export default function App() {
     setStats(freshStats())
     setResults([])
     setFeedback(null)
+    setComboBadge(null)
     actionLocked.current = false
     timeRemaining.current = cardDuration(0, difficulty) / 1000
     setTimerResetKey((key) => key + 1)
@@ -136,6 +199,7 @@ export default function App() {
   }
 
   function finishTutorial() {
+    playTap()
     sessionStorage.setItem(`${STORAGE_KEYS.tutorialSeen}.${modeId}`, '1')
     setGameState('playing')
     resetTimerLock()
@@ -143,15 +207,18 @@ export default function App() {
 
   function pause() {
     if (gameState !== 'playing') return
+    playPause()
     setPreviousState(gameState)
     setGameState('paused')
   }
 
   function resume() {
+    playResume()
     setGameState(previousState === 'playing' ? 'playing' : 'playing')
   }
 
   function goHome() {
+    playTap()
     if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current)
     roundId.current += 1
     setFeedback(null)
@@ -180,7 +247,12 @@ export default function App() {
   }
 
   function endRun(finalScore = score, finalStats = stats, finalResults = results) {
+    markCardsSeen(
+      finalResults.map((result) => result.card),
+      { profileId: activeProfile.id, deckId: modeId, maxStored: mode.cards.length },
+    )
     updateProfileProgress(finalScore, finalStats)
+    playGameOver()
     setFeedback(null)
     setStats(finalStats)
     setResults(finalResults)
@@ -222,6 +294,8 @@ export default function App() {
       wasCorrect,
       resultType: wasMissed ? 'missed' : wasCorrect ? 'correct' : 'wrong',
       explanation: resolvedCard.explanation,
+      deckId: modeId,
+      timestamp: Date.now(),
     }
     const nextStats = {
       correct: stats.correct + (wasCorrect ? 1 : 0),
@@ -238,6 +312,18 @@ export default function App() {
     setResults(nextResults)
     setFeedback(result)
     setGameState('feedback')
+    if (wasMissed) playTimeout()
+    else if (wasCorrect) playCorrect()
+    else {
+      playWrong()
+      playHeartLost()
+    }
+    const comboLabel = wasCorrect ? comboLabelFor(nextStreak) : null
+    if (comboLabel) {
+      setComboBadge(comboLabel)
+      playStreak()
+      setTimeout(() => setComboBadge(null), 1200)
+    }
 
     feedbackTimeout.current = setTimeout(
       () => advanceAfterFeedback(nextHearts, nextScore, nextStats, nextResults, resolvedCard.id, resolvedRoundId),
@@ -267,10 +353,12 @@ export default function App() {
             modeId={modeId}
             difficulty={difficulty}
             bestScore={bestScore}
+            soundEnabled={soundEnabled}
             onCreateProfile={createProfile}
             onSelectProfile={selectProfile}
-            onModeChange={setModeId}
-            onDifficultyChange={setDifficulty}
+            onModeChange={changeMode}
+            onDifficultyChange={changeDifficulty}
+            onToggleSound={toggleSound}
             onPlay={startRun}
           />
         )}
@@ -286,6 +374,7 @@ export default function App() {
               streak={streak}
               duration={duration}
               labels={mode.labels}
+              soundEnabled={soundEnabled}
               timerActive={false}
               timerResetKey={timerResetKey}
               timeRemaining={timeRemaining}
@@ -293,6 +382,7 @@ export default function App() {
               onAnswer={(answer, cardId) => resolveCard(answer, 'answered', cardId)}
               onTimeout={(cardId) => resolveCard(null, 'missed', cardId)}
               onPause={pause}
+              onToggleSound={toggleSound}
             />
             <TutorialOverlay mode={mode} onDone={finishTutorial} />
           </>
@@ -308,6 +398,7 @@ export default function App() {
             streak={streak}
             duration={duration}
             labels={mode.labels}
+            soundEnabled={soundEnabled}
             timerActive={gameState === 'playing'}
             timerResetKey={timerResetKey}
             timeRemaining={timeRemaining}
@@ -315,10 +406,12 @@ export default function App() {
             onAnswer={(answer, cardId) => resolveCard(answer, 'answered', cardId)}
             onTimeout={(cardId) => resolveCard(null, 'missed', cardId)}
             onPause={pause}
+            onToggleSound={toggleSound}
           />
         )}
 
         {gameState === 'feedback' && feedback && <FeedbackOverlay result={feedback} labels={mode.labels} />}
+        {comboBadge && <div className="combo-badge">{comboBadge}</div>}
 
         {gameState === 'paused' && <PauseMenu onResume={resume} onRestart={startRun} onHome={goHome} />}
 
@@ -332,6 +425,7 @@ export default function App() {
             accuracy={accuracy}
             stats={stats}
             hasReview={missedOrWrong.length > 0}
+            takeaway={mode.takeaway}
             onPlayAgain={startRun}
             onReview={showReview}
             onHome={goHome}

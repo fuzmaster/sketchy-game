@@ -19,15 +19,15 @@ Open the printed local URL, usually `http://localhost:5173`.
 ## How To Play
 
 - Choose a player profile from the menu, or create a new local profile.
-- Choose **Food Facts** or **Scam Spotter**.
-- Choose **Easy** or **Hard**.
+- Choose **Fresh or Fake** or **Scam Spotter**.
+- Choose **Easy**, **Normal**, or **Hard**.
 - Swipe right, tap the right answer, or press **Right Arrow**.
 - Swipe left, tap the left answer, or press **Left Arrow**.
 - Press **Escape** to pause.
 - Wrong answers cost one heart.
 - Timeouts count as missed, give no points, and do not cost hearts.
 - Accuracy is based only on answered cards.
-- Best scores and lifetime profile progress are saved in `localStorage`.
+- Best scores, sound preference, and lifetime profile progress are saved in `localStorage` on this device.
 
 ## MVP Scope
 
@@ -36,9 +36,12 @@ Open the printed local URL, usually `http://localhost:5173`.
 - 20 scam-spotting cards, balanced 10 Legit / 10 Sketchy.
 - Shuffled deck every run.
 - Local profiles with per-game/per-difficulty best scores.
+- Generated Web Audio sound effects with a persisted Sound On / Muted toggle.
+- Recently seen cards are rotated locally to reduce back-to-back repeats.
+- Combo milestone feedback without currencies or reward clutter.
 - First-session tutorial.
 - Pause, restart, game over, and review missed/wrong cards.
-- No backend, accounts, payments, ads, categories, or external APIs.
+- No backend, cloud sign-in, payments, ads, categories, or external APIs.
 
 ## Project Structure
 
@@ -48,11 +51,17 @@ src/
   main.jsx
   styles.css
   game/
+    comboMilestones.js
+    deckValidation.js
     foodCards.js
     scamCards.js
+    seenCards.js
     triviaModes.js
     rules.js
     scoring.js
+  audio/
+    sfx.js
+    sfxManifest.js
   utils/
     shuffle.js
   components/

@@ -7,6 +7,7 @@ export function GameOverScreen({
   accuracy,
   stats,
   hasReview,
+  takeaway,
   onPlayAgain,
   onReview,
   onHome,
@@ -30,6 +31,10 @@ export function GameOverScreen({
         <Stat label="Correct" value={stats.correct} />
         <Stat label="Wrong" value={stats.wrong} />
         <Stat label="Missed" value={stats.missed} />
+      </div>
+      <div className="takeaway-card">
+        <strong>What to watch for next time</strong>
+        <p>{takeaway}</p>
       </div>
       <div className="button-stack">
         <button className="primary-button" onClick={onPlayAgain}>

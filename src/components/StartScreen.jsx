@@ -8,10 +8,12 @@ export function StartScreen({
   modeId,
   difficulty,
   bestScore,
+  soundEnabled,
   onCreateProfile,
   onSelectProfile,
   onModeChange,
   onDifficultyChange,
+  onToggleSound,
   onPlay,
 }) {
   const [name, setName] = useState('')
@@ -27,10 +29,11 @@ export function StartScreen({
       <div className="brand-lockup compact">
         <div className="app-badge">{mode.icon}</div>
         <h1>Trivia Swipe</h1>
-        <p>{mode.subtitle}</p>
+        <p>Trust your gut. Swipe fast. Learn something.</p>
       </div>
 
       <section className="menu-panel">
+        <p className="profile-copy">Choose a player. Progress is saved on this device.</p>
         <div className="menu-row">
           <label htmlFor="profile">Player</label>
           <select id="profile" value={activeProfile.id} onChange={(event) => onSelectProfile(event.target.value)}>
@@ -64,6 +67,7 @@ export function StartScreen({
             >
               <span>{item.icon}</span>
               <strong>{item.shortTitle}</strong>
+              <small>{item.description}</small>
             </button>
           ))}
         </div>
@@ -93,6 +97,9 @@ export function StartScreen({
         <strong>Best {bestScore.toLocaleString()}</strong>
       </div>
 
+      <button className="sound-toggle" aria-label={soundEnabled ? 'Sound On' : 'Muted'} onClick={onToggleSound}>
+        {soundEnabled ? 'Sound On' : 'Muted'}
+      </button>
       <button className="primary-button" onClick={onPlay}>
         Play
       </button>

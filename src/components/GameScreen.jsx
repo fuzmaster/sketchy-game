@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { FoodCard } from './FoodCard.jsx'
 import { TimerBar } from './TimerBar.jsx'
+import { playSwipe } from '../audio/sfx.js'
 
 export function GameScreen({
   card,
@@ -11,6 +12,7 @@ export function GameScreen({
   streak,
   duration,
   labels,
+  soundEnabled,
   timerActive,
   timerResetKey,
   timeRemaining,
@@ -18,6 +20,7 @@ export function GameScreen({
   onAnswer,
   onTimeout,
   onPause,
+  onToggleSound,
 }) {
   const [remaining, setRemaining] = useState(duration / 1000)
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false })
@@ -46,15 +49,13 @@ export function GameScreen({
       if (lastTick.current == null) lastTick.current = now
       const delta = (now - lastTick.current) / 1000
       lastTick.current = now
-      setRemaining((current) => {
-        const next = Math.max(0, current - delta)
-        timeRemaining.current = next
-        if (next <= 0 && card && !firedTimeout.current) {
-          firedTimeout.current = true
-          onTimeout(card.id)
-        }
-        return next
-      })
+      const next = Math.max(0, timeRemaining.current - delta)
+      timeRemaining.current = next
+      setRemaining(next)
+      if (next <= 0 && card && !firedTimeout.current) {
+        firedTimeout.current = true
+        onTimeout(card.id)
+      }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
@@ -85,6 +86,7 @@ export function GameScreen({
 
   function commit(answer) {
     if (!timerActive || flying) return
+    playSwipe()
     setFlying(answer)
     onAnswer(answer, card.id)
   }
@@ -139,6 +141,14 @@ export function GameScreen({
         </div>
         <button className="pause-button" aria-label="Pause" onClick={onPause}>
           ||
+        </button>
+        <button
+          className="sound-button"
+          aria-label={soundEnabled ? 'Sound On' : 'Muted'}
+          onClick={onToggleSound}
+          type="button"
+        >
+          {soundEnabled ? 'Sound On' : 'Muted'}
         </button>
       </header>
 

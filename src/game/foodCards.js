@@ -1,4 +1,4 @@
-export const foodCards = [
+const rawFoodCards = [
   {
     id: 'food-001',
     claim: 'Bananas are berries.',
@@ -400,3 +400,10 @@ export const foodCards = [
     highlight: 'same plant species',
   },
 ]
+
+export const foodCards = rawFoodCards.map((card, index) => ({
+  difficulty: index < 16 ? 'easy' : index < 36 ? 'medium' : 'hard',
+  confidence: 'high',
+  sourceNote: 'Launch deck fact checked for clear non-medical food trivia.',
+  ...card,
+}))

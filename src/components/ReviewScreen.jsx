@@ -22,21 +22,31 @@ export function ReviewScreen({ results, labels, onPlayAgain, onHome, onBack }) {
       {results.length === 0 ? (
         <p className="empty-review">Nothing to review. Clean plate.</p>
       ) : (
-        <div className="review-list">
-          {results.map((result) => (
-            <article className="review-item" key={result.card.id}>
-              <span className="review-category">{result.card.category}</span>
-              <h2>{result.card.claim}</h2>
-              <p>
-                Correct answer: <strong className={result.correctAnswer}>{answerLabels[result.correctAnswer]}</strong>
-              </p>
-              <p>
-                Player result: <strong>{answerLabels[result.resultType]}</strong>
-              </p>
-              <p>{result.explanation}</p>
-            </article>
-          ))}
-        </div>
+        <>
+          <div className="review-list">
+            {results.map((result) => (
+              <article className="review-item" key={`${result.card.id}-${result.timestamp}`}>
+                <span className="review-category">{result.card.category}</span>
+                <h2>{result.card.claim}</h2>
+                <p>
+                  Correct answer: <strong className={result.correctAnswer}>{answerLabels[result.correctAnswer]}</strong>
+                </p>
+                <p>
+                  Player result: <strong>{answerLabels[result.resultType]}</strong>
+                </p>
+                <p>{result.explanation}</p>
+              </article>
+            ))}
+          </div>
+          <div className="review-bottom">
+            <button className="mini-button fresh-button" onClick={onPlayAgain}>
+              Play Again
+            </button>
+            <button className="mini-button" onClick={onHome}>
+              Home
+            </button>
+          </div>
+        </>
       )}
     </div>
   )

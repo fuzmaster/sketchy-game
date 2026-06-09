@@ -1,7 +1,7 @@
-export const scamCards = [
+const rawScamCards = [
   {
     id: 'scam-001',
-    claim: 'Your bank texts: “We noticed suspicious activity. Verify your password now or your account locks.”',
+    claim: 'Your bank texts: “We noticed suspicious activity. Verify your password now or access stops.”',
     answer: 'fake',
     explanation: 'Banks do not ask for passwords by text. Urgent “verify now” messages are phishing bait.',
     category: 'Bank Alert',
@@ -67,7 +67,7 @@ export const scamCards = [
     id: 'scam-009',
     claim: 'A caller says they are from support and asks you to read them your one-time code.',
     answer: 'fake',
-    explanation: 'One-time codes should not be shared. Asking for one is an account takeover trick.',
+    explanation: 'One-time codes should not be shared. Asking for one is a profile takeover trick.',
     category: 'Code Scam',
     highlight: 'one-time code',
   },
@@ -121,11 +121,11 @@ export const scamCards = [
   },
   {
     id: 'scam-016',
-    claim: 'A streaming receipt says you can manage your plan inside account settings.',
+    claim: 'A streaming receipt says you can manage your plan inside app settings.',
     answer: 'fresh',
-    explanation: 'A normal receipt pointing to account settings, not a forced link, is usually legitimate.',
+    explanation: 'A normal receipt pointing to app settings, not a forced link, is usually legitimate.',
     category: 'Receipt',
-    highlight: 'account settings',
+    highlight: 'app settings',
   },
   {
     id: 'scam-017',
@@ -145,9 +145,9 @@ export const scamCards = [
   },
   {
     id: 'scam-019',
-    claim: 'A crypto message promises to double your money in 24 hours if you send coins first.',
+    claim: 'A crypto message promises to double your money in 24 hours if you send crypto first.',
     answer: 'fake',
-    explanation: 'Guaranteed crypto doubling is not real. Sending coins first is the trap.',
+    explanation: 'Guaranteed crypto doubling is not real. Sending crypto first is the trap.',
     category: 'Crypto',
     highlight: 'double your money',
   },
@@ -160,3 +160,10 @@ export const scamCards = [
     highlight: 'printed on your card',
   },
 ]
+
+export const scamCards = rawScamCards.map((card, index) => ({
+  difficulty: index < 7 ? 'easy' : index < 15 ? 'medium' : 'hard',
+  confidence: 'high',
+  sourceNote: 'Launch deck uses common scam-pattern education, not legal or financial advice.',
+  ...card,
+}))

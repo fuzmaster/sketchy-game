@@ -11,13 +11,19 @@ export const STORAGE_KEYS = {
   profiles: 'fresh-or-fake.profiles',
   activeProfile: 'fresh-or-fake.activeProfile',
   tutorialSeen: 'fresh-or-fake.tutorialSeen',
+  seenCards: 'triviaSwipe_seenCards_v1',
 }
 
-export function cardDuration(index, difficulty = 'easy') {
+export function cardDuration(index, difficulty = 'normal') {
+  if (difficulty === 'easy') {
+    if (index < 5) return 11000
+    if (index < 15) return 9000
+    return 8000
+  }
   if (difficulty === 'hard') {
-    if (index < 5) return 6500
-    if (index < 15) return 5200
-    return 4200
+    if (index < 5) return 7000
+    if (index < 15) return 6000
+    return 5000
   }
   if (index < 5) return 9000
   if (index < 15) return 7000

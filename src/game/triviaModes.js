@@ -5,8 +5,10 @@ export const TRIVIA_MODES = {
   food: {
     id: 'food',
     title: 'Fresh or Fake',
-    shortTitle: 'Food Facts',
+    shortTitle: 'Fresh or Fake',
     subtitle: 'Swipe through weird food facts before the kitchen timer runs out.',
+    description: 'Weird food facts. Swipe Fresh if it’s true, Fake if it’s false.',
+    takeaway: 'Food facts are weird. Look for precise wording and cooking-vs-botany clues.',
     icon: '🥑',
     cards: foodCards,
     labels: {
@@ -22,6 +24,8 @@ export const TRIVIA_MODES = {
     title: 'Scam Spotter',
     shortTitle: 'Scam Spotter',
     subtitle: 'Swipe through suspicious messages and spot the trick before it spots you.',
+    description: 'Real-world sketchy messages. Swipe Sketchy or Legit.',
+    takeaway: 'Watch for urgency, payment pressure, password/code requests, and strange links.',
     icon: '🕵',
     cards: scamCards,
     labels: {
@@ -39,6 +43,11 @@ export const DIFFICULTIES = {
     id: 'easy',
     label: 'Easy',
     description: 'Roomier timer for casual play.',
+  },
+  normal: {
+    id: 'normal',
+    label: 'Normal',
+    description: 'Balanced timer for quick rounds.',
   },
   hard: {
     id: 'hard',
