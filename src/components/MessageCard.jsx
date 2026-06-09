@@ -1,20 +1,7 @@
 import { ChannelIcon } from './icons.jsx'
 import { CHANNEL_LABEL } from '../game/cards.js'
 import { SWIPE_THRESHOLD } from '../game/rules.js'
-
-/** Wrap the card's "hook" phrase in a highlight mark, leaving the rest as plain text. */
-function renderHighlight(text, hl) {
-  if (!hl) return text
-  const i = text.indexOf(hl)
-  if (i < 0) return text
-  return [
-    <span key="a">{text.slice(0, i)}</span>,
-    <mark className="hl" key="b">
-      {hl}
-    </mark>,
-    <span key="c">{text.slice(i + hl.length)}</span>,
-  ]
-}
+import { renderHighlight } from './highlight.jsx'
 
 /**
  * The message card. `dx` is the live horizontal drag offset, used to fade the

@@ -1,6 +1,8 @@
-import { useMemo } from 'react'
-import { Doodle } from '../components/icons.jsx'
+import { useMemo, useState } from 'react'
+import { ChannelIcon, Doodle } from '../components/icons.jsx'
 import { Button } from '../components/Button.jsx'
+import { renderHighlight } from '../components/highlight.jsx'
+import { CHANNEL_LABEL } from '../game/cards.js'
 import { starburst } from '../utils/starburst.js'
 
 function Stat({ label, value, color }) {
@@ -24,10 +26,35 @@ function Stat({ label, value, color }) {
   )
 }
 
+function ReviewCard({ outcome }) {
+  const { card } = outcome
+  return (
+    <div className="review-card">
+      <div className="review-head">
+        <span className="review-icon">
+          <ChannelIcon name={card.channel} size={22} />
+        </span>
+        <span>
+          <span className="review-label">{CHANNEL_LABEL[card.channel]}</span>
+          <span className="review-from">{card.from}</span>
+        </span>
+      </div>
+      <div className="review-body">{renderHighlight(card.text, card.hl)}</div>
+      <div className="review-answer">
+        It was <span className={card.answer}>{card.answer === 'sketchy' ? 'SKETCHY' : 'LEGIT'}</span>
+        {outcome.type === 'slow' ? ' after the timer ran out.' : '.'}
+      </div>
+      <div className="review-why">{card.why}</div>
+    </div>
+  )
+}
+
 /** End-of-run summary: burst title, accuracy ring + grade, and stat tiles. */
 export function GameOverScreen({ summary, onAgain, onMenu }) {
+  const [reviewOpen, setReviewOpen] = useState(false)
   const burst = useMemo(() => starburst(16, 0.78), [])
   const acc = summary.accuracy
+  const reviewCards = summary.reviewCards || []
   const title = acc >= 80 ? 'Good job!' : acc >= 50 ? 'Nice run!' : 'Almost got you.'
   const sub =
     acc >= 80
@@ -138,6 +165,25 @@ export function GameOverScreen({ summary, onAgain, onMenu }) {
         <Stat label="BEST STREAK" value={'x' + summary.bestStreak} color="var(--teal)" />
         <Stat label="SCAMS SPOTTED" value={summary.scamsSpotted} color="var(--orange)" />
       </div>
+
+      {reviewCards.length > 0 && (
+        <div className="review-wrap">
+          <Button
+            variant="cream"
+            onClick={() => setReviewOpen((open) => !open)}
+            style={{ width: '100%', fontSize: 16, padding: '12px 0', borderRadius: 16 }}
+          >
+            {reviewOpen ? 'HIDE REVIEW' : `REVIEW MISSED (${reviewCards.length})`}
+          </Button>
+          {reviewOpen && (
+            <div className="review-list">
+              {reviewCards.map((outcome) => (
+                <ReviewCard key={`${outcome.card.id}-${outcome.type}`} outcome={outcome} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 11, width: '100%', marginTop: 18 }}>
         <Button variant="teal" play onClick={onAgain} style={{ fontSize: 22, padding: '15px 0', borderRadius: 20 }}>

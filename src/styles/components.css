@@ -630,6 +630,88 @@
   line-height: 1;
 }
 
+/* ====== post-game review ====== */
+.review-wrap {
+  width: 100%;
+  margin-top: 12px;
+}
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.review-card {
+  background: var(--cream);
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  box-shadow: 0 4px 0 rgba(31, 35, 40, 0.14);
+  padding: 12px;
+  text-align: left;
+}
+.review-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.review-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+}
+.review-label,
+.review-from,
+.review-answer {
+  display: block;
+  font-family: var(--ff-head);
+  font-weight: 800;
+}
+.review-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--teal);
+  text-transform: uppercase;
+}
+.review-from {
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ink-soft);
+}
+.review-body {
+  margin-top: 8px;
+  font-family: var(--ff-body);
+  font-weight: 900;
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--ink);
+}
+.review-body .hl {
+  background: linear-gradient(180deg, transparent 10%, rgba(255, 77, 45, 0.3) 10% 90%, transparent 90%);
+  padding: 0 3px;
+  border-radius: 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.review-answer {
+  margin-top: 9px;
+  font-size: 13px;
+  color: var(--ink);
+}
+.review-answer .sketchy {
+  color: var(--orange);
+}
+.review-answer .legit {
+  color: var(--teal);
+}
+.review-why {
+  margin-top: 3px;
+  font-family: var(--ff-body);
+  font-weight: 800;
+  font-size: 13px;
+  line-height: 1.28;
+  color: var(--ink-soft);
+}
+
 /* ====== tutorial overlay ====== */
 .tut-step {
   display: flex;

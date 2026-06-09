@@ -23,6 +23,7 @@ import {
 } from './game/rules.js'
 
 const freshStats = () => ({ answered: 0, correct: 0, scams: 0, bestStreak: 0, missed: 0 })
+const freshOutcomes = () => []
 
 // Dev Notes are an internal design/handoff reference — available in dev builds
 // only, never shipped in a production bundle.
@@ -45,6 +46,7 @@ export default function App() {
 
   // Tallies live in a ref so deferred timeouts read fresh values.
   const stats = useRef(freshStats())
+  const outcomes = useRef(freshOutcomes())
   const timeRemaining = useRef(CARD_TIME)
   // Synchronous guard against double-resolution: a fast double-tap, or a
   // timeout firing in the same tick as a swipe, could otherwise resolve a card
@@ -75,6 +77,7 @@ export default function App() {
     setPaused(false)
     setSummary(null)
     stats.current = freshStats()
+    outcomes.current = freshOutcomes()
     actionLocked.current = false
     setTutorial(!localStorage.getItem(STORAGE_KEYS.tutorialSeen))
     setScreen('play')
@@ -86,7 +89,17 @@ export default function App() {
   }
 
   function endGame(reason, finalScore) {
-    const s = stats.current
+    const round = outcomes.current
+    const answered = round.filter((o) => o.type !== 'slow')
+    const correct = answered.filter((o) => o.correct)
+    const missedCards = round.filter((o) => !o.correct)
+    const s = {
+      answered: answered.length,
+      correct: correct.length,
+      scams: correct.filter((o) => o.card.answer === 'sketchy').length,
+      bestStreak: stats.current.bestStreak,
+      missed: round.filter((o) => o.type === 'slow').length,
+    }
     const accuracy = s.answered ? Math.round((s.correct / s.answered) * 100) : 0
     const fs = finalScore != null ? finalScore : score
     const newBest = fs > best
@@ -102,6 +115,10 @@ export default function App() {
       accuracy,
       grade: gradeFor(accuracy),
       newBest,
+      answered: s.answered,
+      correct: s.correct,
+      skipped: s.missed,
+      reviewCards: missedCards,
     })
     setTimeout(() => setScreen('over'), 30)
   }
@@ -148,6 +165,7 @@ export default function App() {
       setStreak(0)
     }
 
+    outcomes.current.push({ type: correct ? 'correct' : 'wrong', card, choice, correct })
     setFeedback({ type: correct ? 'correct' : 'wrong', answer: card.answer, why: card.why })
     setTimeout(() => advance(nextLives, nextScore), correct ? FEEDBACK_HOLD.correct : FEEDBACK_HOLD.wrong)
   }
@@ -157,6 +175,7 @@ export default function App() {
     actionLocked.current = true
     const s = stats.current
     s.missed++ // tracked as "missed" — never a wrong answer, never in accuracy
+    outcomes.current.push({ type: 'slow', card, choice: null, correct: false })
     setStreak(0)
     setFeedback({ type: 'slow', answer: card.answer, why: card.why })
     setTimeout(() => advance(lives, score), FEEDBACK_HOLD.slow)
