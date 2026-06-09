@@ -1451,3 +1451,39 @@ h2 {
 .review-item strong.mc {
   color: var(--gut-teal);
 }
+
+/* ===== desktop layout fixes ============================================== */
+/* New-player form now has 3 children (avatar chip · input · Add): make the
+   input the flexible track so it shrinks instead of blowing out the panel. */
+.compact-profile-form {
+  grid-template-columns: auto 1fr auto;
+}
+/* Game-over content can exceed the frame; let it scroll from the top instead
+   of centering (which clipped the title and the last button). */
+.gameover-screen {
+  justify-content: flex-start;
+  overflow-y: auto;
+  gap: 14px;
+}
+
+/* Deck cards: shrink so two columns fit the panel without clipping. */
+.deck-card {
+  grid-template-columns: 38px 1fr;
+  column-gap: 8px;
+  padding: 10px;
+  min-width: 0;
+}
+.deck-card span {
+  width: 38px;
+  height: 38px;
+  font-size: 22px;
+}
+.deck-card strong {
+  font-size: 16px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.deck-card small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
