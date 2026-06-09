@@ -344,7 +344,7 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <section className="phone-frame" aria-label="Trivia game menu">
+      <section className="phone-frame" aria-label="Gut Check game menu">
         {gameState === 'start' && (
           <StartScreen
             activeProfile={activeProfile}

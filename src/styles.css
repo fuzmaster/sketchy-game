@@ -1,6 +1,7 @@
 :root {
   --cream: #fff6eb;
   --charcoal: #1f2328;
+  --gut-teal: #00a79b;
   --fresh: #00a878;
   --fresh-dark: #007f5d;
   --fake: #ff4d2d;
@@ -11,7 +12,7 @@
   --shadow: 0 6px 0 rgba(31, 35, 40, 0.18), 0 18px 36px rgba(31, 35, 40, 0.16);
   font-family: "Trebuchet MS", "Arial Rounded MT Bold", system-ui, sans-serif;
   color: var(--charcoal);
-  background: var(--soft-beige);
+  background: var(--gut-teal);
 }
 
 * {
@@ -40,9 +41,9 @@ button {
   place-items: center;
   padding: 24px;
   background:
-    radial-gradient(circle at 20% 14%, rgba(0, 168, 120, 0.18), transparent 32%),
+    radial-gradient(circle at 20% 14%, rgba(255, 246, 235, 0.24), transparent 32%),
     radial-gradient(circle at 82% 86%, rgba(255, 77, 45, 0.16), transparent 34%),
-    linear-gradient(135deg, var(--soft-beige), #f8ead8);
+    var(--gut-teal);
 }
 
 .phone-frame {
@@ -96,22 +97,60 @@ button {
 }
 
 .brand-lockup.compact {
-  gap: 8px;
-}
-
-.brand-lockup.compact .app-badge {
-  width: 66px;
-  height: 66px;
-  border-radius: 18px;
-  font-size: 30px;
+  gap: 7px;
 }
 
 .brand-lockup.compact h1 {
-  font-size: 44px;
+  font-size: 48px;
 }
 
 .brand-lockup.compact p {
   font-size: 15px;
+}
+
+.gut-check-mark {
+  position: relative;
+  width: 78px;
+  height: 78px;
+  border: 5px solid var(--charcoal);
+  border-radius: 22px;
+  background: var(--cream);
+  box-shadow: var(--shadow);
+  transform: rotate(-4deg);
+}
+
+.gut-check-mark::before {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 17px;
+  width: 26px;
+  height: 26px;
+  border: 5px solid var(--charcoal);
+  border-radius: 50%;
+  background: var(--fake);
+}
+
+.gut-check-mark span {
+  position: absolute;
+  right: -11px;
+  bottom: 17px;
+  width: 61px;
+  height: 34px;
+  border-right: 15px solid var(--fresh);
+  border-bottom: 15px solid var(--fresh);
+  transform: rotate(38deg);
+}
+
+.gut-check-mark span::after {
+  content: "";
+  position: absolute;
+  right: -17px;
+  bottom: -17px;
+  width: 61px;
+  height: 34px;
+  border-right: 5px solid var(--charcoal);
+  border-bottom: 5px solid var(--charcoal);
 }
 
 .app-badge {
@@ -182,6 +221,61 @@ h2 {
   color: #4b5056;
 }
 
+.launch-panel {
+  width: 100%;
+  display: grid;
+  gap: 11px;
+  border: 4px solid var(--charcoal);
+  border-radius: 24px;
+  padding: 14px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.profile-strip {
+  display: grid;
+  grid-template-columns: 1fr 118px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 3px solid var(--charcoal);
+  border-radius: 16px;
+  background: var(--cream);
+  text-align: left;
+}
+
+.profile-strip div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profile-strip strong {
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-strip span {
+  color: #5a6067;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.profile-strip select {
+  min-width: 0;
+  height: 38px;
+  border: 2px solid var(--charcoal);
+  border-radius: 12px;
+  padding: 0 8px;
+  background: var(--white);
+  color: var(--charcoal);
+  font: inherit;
+  font-weight: 900;
+}
+
 .menu-row {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -212,6 +306,11 @@ h2 {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
+}
+
+.compact-profile-form input,
+.compact-profile-form button {
+  height: 38px;
 }
 
 .profile-form button {
@@ -266,22 +365,97 @@ h2 {
   text-align: center;
 }
 
+.deck-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.deck-card {
+  min-height: 88px;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  column-gap: 10px;
+  align-items: center;
+  border: 3px solid var(--charcoal);
+  border-radius: 18px;
+  padding: 12px;
+  background: var(--cream);
+  color: var(--charcoal);
+  box-shadow: 0 4px 0 rgba(31, 35, 40, 0.12);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.deck-card.selected {
+  background: var(--gut-teal);
+  color: var(--cream);
+}
+
+.deck-card span {
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--charcoal);
+  border-radius: 13px;
+  background: var(--white);
+  font-size: 24px;
+}
+
+.deck-card strong {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.deck-card small {
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 850;
+}
+
+.difficulty-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.difficulty-tabs button {
+  min-height: 42px;
+  border: 3px solid var(--charcoal);
+  border-radius: 14px;
+  background: var(--cream);
+  color: var(--charcoal);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 1000;
+  box-shadow: 0 4px 0 rgba(31, 35, 40, 0.12);
+  cursor: pointer;
+}
+
+.difficulty-tabs button.selected {
+  background: var(--yellow);
+}
+
 .menu-summary {
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr auto;
   gap: 6px;
-  border: 3px solid var(--charcoal);
-  border-radius: 16px;
-  padding: 10px;
-  background: var(--yellow);
+  align-items: center;
+  border: 0;
+  border-radius: 0;
+  padding: 2px 4px;
+  background: transparent;
   font-size: 13px;
   font-weight: 1000;
+  text-align: left;
 }
 
 .sound-toggle {
   min-height: 42px;
-  border: 3px solid var(--charcoal);
+  border: 2px solid var(--charcoal);
   border-radius: 999px;
   padding: 0 16px;
   background: var(--white);
@@ -316,7 +490,7 @@ h2 {
 .primary-button {
   width: min(100%, 310px);
   min-height: 62px;
-  background: var(--fresh);
+  background: var(--gut-teal);
   color: var(--cream);
   font-size: 28px;
 }

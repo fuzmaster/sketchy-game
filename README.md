@@ -1,4 +1,4 @@
-# Trivia Swipe
+# Gut Check
 
 A polished React + Vite swipe trivia hub with two local games:
 

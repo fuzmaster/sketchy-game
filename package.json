@@ -1,8 +1,8 @@
 {
-  "name": "trivia-swipe",
+  "name": "gut-check",
   "private": true,
   "version": "1.0.0",
-  "description": "Trivia Swipe — a local profile-based swipe trivia hub with food facts and scam spotting.",
+  "description": "Gut Check — a local profile-based swipe trivia hub with food facts and scam spotting.",
   "type": "module",
   "scripts": {
     "dev": "vite",
