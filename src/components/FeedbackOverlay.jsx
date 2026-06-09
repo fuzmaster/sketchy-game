@@ -1,15 +1,12 @@
 export function FeedbackOverlay({ result, labels }) {
-  const answerLabel = {
+  const card = result.card
+  const isMultipleChoice = card.answerType === 'multiple-choice'
+  const binaryLabel = {
     [labels.rightValue]: labels.right,
     [labels.leftValue]: labels.left,
   }
-  const title = result.resultType === 'missed'
-    ? 'Too slow!'
-    : result.wasCorrect
-      ? result.correctAnswer === labels.rightValue
-        ? `${labels.right} fact!`
-        : 'Good catch!'
-      : 'Oof, not quite.'
+  const correctText = isMultipleChoice ? result.correctAnswer : binaryLabel[result.correctAnswer]
+  const title = result.resultType === 'missed' ? 'Too slow!' : result.wasCorrect ? 'Nice!' : 'Oof, not quite.'
 
   return (
     <div className="feedback-layer" aria-live="polite">
@@ -17,9 +14,14 @@ export function FeedbackOverlay({ result, labels }) {
         <h2>{title}</h2>
         <p className="feedback-answer">
           {result.resultType === 'missed' ? 'No points. Next one.' : 'Correct answer:'}{' '}
-          <strong className={result.correctAnswer}>{answerLabel[result.correctAnswer]}</strong>
+          <strong className={isMultipleChoice ? 'mc' : result.correctAnswer}>{correctText}</strong>
         </p>
         <p>{result.explanation}</p>
+        {card.sourceUrl && (
+          <a className="source-link" href={card.sourceUrl} target="_blank" rel="noopener noreferrer">
+            Source: {card.sourceName || 'link'}
+          </a>
+        )}
       </div>
     </div>
   )

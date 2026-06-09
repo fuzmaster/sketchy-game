@@ -101,7 +101,11 @@ export default function App() {
   useEffect(() => {
     if (!import.meta.env.DEV) return
     Object.values(TRIVIA_MODES).forEach((triviaMode) => {
-      validateDeck(triviaMode.cards, { deckId: triviaMode.id })
+      const labels = triviaMode.labels || {}
+      validateDeck(triviaMode.cards, {
+        deckId: triviaMode.id,
+        validAnswers: labels.rightValue ? [labels.rightValue, labels.leftValue] : undefined,
+      })
     })
   }, [])
 

@@ -31,13 +31,17 @@ build streaks — and pick up something useful along the way.
 
 ## Decks
 
-| Deck | Status | Swipe |
+| Deck | Status | Answer |
 | --- | --- | --- |
-| Fresh or Fake | ✅ Playable | Fake ⟵ / ⟶ Fresh |
-| Scam Spotter | ✅ Playable | Sketchy ⟵ / ⟶ Legit |
-| Quick Math | 🔜 Coming soon | multiple-choice / input |
-| Weird Facts | 🔜 Coming soon | No Way ⟵ / ⟶ True |
+| Fresh or Fake | ✅ Playable | swipe: Fake ⟵ / ⟶ Fresh |
+| Scam Spotter | ✅ Playable | swipe: Sketchy ⟵ / ⟶ Legit |
+| Quick Math | ✅ Playable | multiple-choice (tap / keys 1–4) |
+| Weird Facts | ✅ Playable | swipe: No Way ⟵ / ⟶ True (sourced facts) |
 | Animal Facts · History Hits · Science Snacks | 🔜 Coming soon | — |
+
+Card model supports `answerType: 'binary' | 'multiple-choice'` (with
+`math-input` reserved for later), optional tiny `graphic`, and source fields.
+Factual decks cite a real source — see `docs/CONTENT_SOURCING.md`.
 
 Gameplay always runs from **bundled, curated card data**. No live scraping, no
 runtime calls to external sources during play.

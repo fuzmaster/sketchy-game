@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DIFFICULTIES, TRIVIA_MODES } from '../game/triviaModes.js'
+import { COMING_SOON_DECKS, DIFFICULTIES, TRIVIA_MODES } from '../game/triviaModes.js'
 import { ACHIEVEMENTS } from '../game/achievements.js'
 import { AVATARS, DEFAULT_AVATAR_ID, getAvatar } from '../game/avatars.js'
 import { AvatarBadge, AvatarPicker } from './AvatarPicker.jsx'
@@ -115,6 +115,20 @@ export function StartScreen({
               <span>{item.icon}</span>
               <strong>{item.shortTitle}</strong>
               <small>{item.description}</small>
+            </button>
+          ))}
+          {COMING_SOON_DECKS.map((item) => (
+            <button
+              className="deck-card coming-soon"
+              type="button"
+              key={item.id}
+              disabled
+              aria-disabled="true"
+              title="Coming soon"
+            >
+              <span>{item.icon}</span>
+              <strong>{item.shortTitle}</strong>
+              <small>Coming soon</small>
             </button>
           ))}
         </div>

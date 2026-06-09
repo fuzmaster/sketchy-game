@@ -25,11 +25,11 @@ export function FoodCard({ card, dragX, labels }) {
       </span>
       <div className="card-meta">
         <span className="food-icon" aria-hidden="true">
-          {card.id.startsWith('scam') ? '!' : card.answer === 'fresh' ? '🥬' : '🍅'}
+          {card.graphic?.value || (card.id.startsWith('scam') ? '✉️' : '🍽')}
         </span>
         <span>{card.category}</span>
       </div>
-      <p>{highlightClaim(card.claim, card.highlight)}</p>
+      <p>{highlightClaim(card.claim || card.prompt, card.highlight)}</p>
     </article>
   )
 }

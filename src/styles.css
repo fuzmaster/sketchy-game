@@ -1358,3 +1358,96 @@ h2 {
   gap: 7px;
   justify-content: center;
 }
+
+/* ===== multiple-choice (Quick Math) ====================================== */
+.choice-card {
+  width: 100%;
+  border: 4px solid var(--charcoal);
+  border-radius: 22px;
+  background: var(--cream);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+.choice-prompt {
+  font-size: 25px;
+  line-height: 1.25;
+  font-weight: 1000;
+  text-align: center;
+}
+.card-graphic {
+  font-size: 24px;
+  line-height: 1;
+}
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 6px;
+}
+.mc-choice {
+  min-height: 58px;
+  border: 3px solid var(--charcoal);
+  border-radius: 16px;
+  background: var(--white);
+  color: var(--charcoal);
+  font-size: 20px;
+  font-weight: 1000;
+  cursor: pointer;
+  box-shadow: 0 5px 0 rgba(31, 35, 40, 0.16);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.mc-choice:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 rgba(31, 35, 40, 0.16);
+}
+.mc-choice.picked {
+  background: var(--yellow);
+}
+.mc-choice:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.mc-count {
+  text-align: center;
+  font-weight: 1000;
+  color: #5a6067;
+  margin-top: 8px;
+}
+
+/* ===== deck grid: 2-up, coming-soon ====================================== */
+.deck-grid {
+  grid-template-columns: 1fr 1fr;
+}
+.deck-card {
+  min-height: 72px;
+}
+.deck-card small {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.deck-card.coming-soon {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== source links + multiple-choice answer color ======================= */
+.source-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--gut-teal);
+  text-decoration: underline;
+}
+.source-link:hover,
+.source-link:focus-visible {
+  color: var(--fake);
+}
+.feedback-answer strong.mc,
+.review-item strong.mc {
+  color: var(--gut-teal);
+}

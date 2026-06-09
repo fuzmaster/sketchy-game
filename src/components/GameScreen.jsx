@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { FoodCard } from './FoodCard.jsx'
+import { ChoiceCard } from './ChoiceCard.jsx'
 import { TimerBar } from './TimerBar.jsx'
 import { playSwipe } from '../audio/sfx.js'
 
@@ -25,9 +26,12 @@ export function GameScreen({
   const [remaining, setRemaining] = useState(duration / 1000)
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false })
   const [flying, setFlying] = useState(null)
+  const [picked, setPicked] = useState(null)
   const startPoint = useRef(null)
   const firedTimeout = useRef(false)
   const lastTick = useRef(null)
+
+  const isMultipleChoice = card?.answerType === 'multiple-choice'
 
   useEffect(() => {
     setRemaining(duration / 1000)
@@ -36,6 +40,7 @@ export function GameScreen({
     lastTick.current = null
     setDrag({ x: 0, y: 0, active: false })
     setFlying(null)
+    setPicked(null)
   }, [card?.id, duration, timerResetKey, timeRemaining])
 
   useEffect(() => {
@@ -65,15 +70,25 @@ export function GameScreen({
   useEffect(() => {
     const onKey = (event) => {
       if (!timerActive) return
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onPause()
+        return
+      }
+      if (isMultipleChoice) {
+        const n = Number(event.key)
+        if (Number.isInteger(n) && n >= 1 && n <= (card?.choices?.length || 0)) {
+          event.preventDefault()
+          commit(card.choices[n - 1])
+        }
+        return
+      }
       if (event.key === 'ArrowLeft') {
         event.preventDefault()
         commit(labels.leftValue)
       } else if (event.key === 'ArrowRight') {
         event.preventDefault()
         commit(labels.rightValue)
-      } else if (event.key === 'Escape') {
-        event.preventDefault()
-        onPause()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -85,14 +100,15 @@ export function GameScreen({
   if (!card) return null
 
   function commit(answer) {
-    if (!timerActive || flying) return
+    if (!timerActive || flying || picked) return
     playSwipe()
-    setFlying(answer)
+    if (isMultipleChoice) setPicked(answer)
+    else setFlying(answer)
     onAnswer(answer, card.id)
   }
 
   function pointerDown(event) {
-    if (!timerActive) return
+    if (!timerActive || isMultipleChoice) return
     startPoint.current = { x: event.clientX, y: event.clientY }
     event.currentTarget.setPointerCapture?.(event.pointerId)
     setDrag({ x: 0, y: 0, active: true })
@@ -117,8 +133,9 @@ export function GameScreen({
   }
 
   const percent = Math.max(0, Math.min(100, (remaining / (duration / 1000)) * 100))
+  const flyRight = flying != null && flying === labels.rightValue
   const cardTransform = flying
-    ? `translateX(${flying === 'fresh' ? 520 : -520}px) rotate(${flying === 'fresh' ? 18 : -18}deg)`
+    ? `translateX(${flyRight ? 520 : -520}px) rotate(${flyRight ? 18 : -18}deg)`
     : `translate(${drag.x}px, ${drag.y * 0.25}px) rotate(${drag.x * 0.045}deg)`
 
   return (
@@ -154,34 +171,64 @@ export function GameScreen({
 
       <TimerBar percent={percent} />
 
-      <div className="card-zone">
-        <div
-          className="drag-card"
-          onPointerDown={pointerDown}
-          onPointerMove={pointerMove}
-          onPointerUp={pointerUp}
-          onPointerCancel={pointerUp}
-          style={{
-            transform: cardTransform,
-            opacity: flying ? 0 : 1,
-            transition: flying ? 'transform .36s ease, opacity .36s ease' : drag.active ? 'none' : 'transform .22s ease',
-          }}
-        >
-          <FoodCard card={card} dragX={drag.x} labels={labels} />
-        </div>
-      </div>
+      {isMultipleChoice ? (
+        <>
+          <div className="card-zone">
+            <ChoiceCard card={card} />
+          </div>
+          <div className="choice-grid" role="group" aria-label="Answer choices">
+            {card.choices.map((choice) => (
+              <button
+                key={choice}
+                type="button"
+                className={`mc-choice ${picked === choice ? 'picked' : ''}`}
+                onClick={() => commit(choice)}
+                disabled={!timerActive}
+              >
+                {choice}
+              </button>
+            ))}
+          </div>
+          <div className="mc-count">
+            {cardIndex + 1}/{totalCards}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="card-zone">
+            <div
+              className="drag-card"
+              onPointerDown={pointerDown}
+              onPointerMove={pointerMove}
+              onPointerUp={pointerUp}
+              onPointerCancel={pointerUp}
+              style={{
+                transform: cardTransform,
+                opacity: flying ? 0 : 1,
+                transition: flying
+                  ? 'transform .36s ease, opacity .36s ease'
+                  : drag.active
+                    ? 'none'
+                    : 'transform .22s ease',
+              }}
+            >
+              <FoodCard card={card} dragX={drag.x} labels={labels} />
+            </div>
+          </div>
 
-      <div className="controls">
-        <button className="choice-button fake-choice" onClick={() => commit(labels.leftValue)} disabled={!timerActive}>
-          {labels.left}
-        </button>
-        <span className="card-count">
-          {cardIndex + 1}/{totalCards}
-        </span>
-        <button className="choice-button fresh-choice" onClick={() => commit(labels.rightValue)} disabled={!timerActive}>
-          {labels.right}
-        </button>
-      </div>
+          <div className="controls">
+            <button className="choice-button fake-choice" onClick={() => commit(labels.leftValue)} disabled={!timerActive}>
+              {labels.left}
+            </button>
+            <span className="card-count">
+              {cardIndex + 1}/{totalCards}
+            </span>
+            <button className="choice-button fresh-choice" onClick={() => commit(labels.rightValue)} disabled={!timerActive}>
+              {labels.right}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
