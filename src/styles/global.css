@@ -1,0 +1,307 @@
+/* ============================================================
+   SKETCHY!  — design tokens, reset, layout shell, animations
+   Palette:  orange #FF4D2D · teal #00A79B · ink #1F2328
+             cream #FFF6EB · sand #EDE5DA · gold #F4C536
+   ============================================================ */
+:root {
+  --orange: #ff4d2d;
+  --orange-deep: #e63414;
+  --teal: #00a79d;
+  --teal-deep: #018076;
+  --ink: #1f2328;
+  --ink-soft: #3a3f45;
+  --cream: #fff6eb;
+  --sand: #ede5da;
+  --sand-deep: #ded3c4;
+  --gold: #f4c536;
+  --gold-deep: #d8a51a;
+
+  --r-card: 22px;
+  --r-pill: 999px;
+  --r-btn: 20px;
+  --bezel: #15181c;
+
+  --ff-display: 'Luckiest Guy', system-ui, sans-serif;
+  --ff-head: 'Baloo 2', system-ui, sans-serif;
+  --ff-body: 'Nunito', system-ui, sans-serif;
+
+  --shadow-soft: 0 6px 0 rgba(31, 35, 40, 0.14), 0 14px 26px rgba(31, 35, 40, 0.13);
+  --shadow-card: 0 5px 0 rgba(31, 35, 40, 0.16), 0 18px 34px rgba(31, 35, 40, 0.18);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+body {
+  font-family: var(--ff-body);
+  background: var(--sand);
+  color: var(--ink);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  height: 100%;
+}
+
+/* ---- halftone + texture backdrop behind the phone ---- */
+.stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(0, 167, 155, 0.1), transparent 42%),
+    radial-gradient(circle at 84% 86%, rgba(255, 77, 45, 0.1), transparent 46%),
+    var(--sand);
+}
+.stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(var(--sand-deep) 1.4px, transparent 1.6px);
+  background-size: 16px 16px;
+  opacity: 0.55;
+}
+
+/* ---- phone frame (desktop) ---- */
+.device {
+  position: relative;
+  width: 393px;
+  height: 852px;
+  max-height: 96vh;
+  background: var(--bezel);
+  border-radius: 54px;
+  padding: 13px;
+  box-shadow:
+    0 0 0 2px #2c3036,
+    0 30px 60px rgba(20, 24, 28, 0.42),
+    0 8px 0 rgba(20, 24, 28, 0.3);
+  flex: 0 0 auto;
+}
+.device::after {
+  /* speaker notch */
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 118px;
+  height: 30px;
+  background: var(--bezel);
+  border-radius: 999px;
+  z-index: 40;
+}
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--cream);
+  border-radius: 42px;
+  overflow: hidden;
+}
+
+/* ---- responsive: full-bleed on real phones ---- */
+@media (max-width: 640px), (max-height: 720px) {
+  .stage {
+    padding: 0;
+  }
+  .stage::before {
+    display: none;
+  }
+  .device {
+    width: 100vw;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .device::after {
+    display: none;
+  }
+  .screen {
+    border-radius: 0;
+  }
+}
+
+/* =========================  ANIMATIONS  ========================= */
+@keyframes pop-in {
+  0% {
+    transform: scale(0.4) rotate(-8deg);
+  }
+  60% {
+    transform: scale(1.12) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(-2deg);
+  }
+}
+@keyframes pop-soft {
+  0% {
+    transform: scale(0.7);
+  }
+  60% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes card-in {
+  0% {
+    transform: translateY(28px) scale(0.9) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(-1deg);
+  }
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(-1deg);
+  }
+  15% {
+    transform: translateX(-12px) rotate(-3deg);
+  }
+  30% {
+    transform: translateX(11px) rotate(2deg);
+  }
+  45% {
+    transform: translateX(-9px) rotate(-2deg);
+  }
+  60% {
+    transform: translateX(7px) rotate(1deg);
+  }
+  75% {
+    transform: translateX(-4px) rotate(-1deg);
+  }
+}
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-1deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+}
+@keyframes heart-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.45);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes heart-break {
+  0% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+@keyframes spin-doodle {
+  0% {
+    transform: rotate(-6deg) scale(1);
+  }
+  50% {
+    transform: rotate(6deg) scale(1.06);
+  }
+  100% {
+    transform: rotate(-6deg) scale(1);
+  }
+}
+@keyframes confetti-fall {
+  0% {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--cx), var(--cy)) rotate(var(--cr));
+    opacity: 0;
+  }
+}
+@keyframes tick-up {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.12);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes burst-in {
+  0% {
+    transform: scale(0.72) rotate(-7deg);
+  }
+  70% {
+    transform: scale(1.06) rotate(3deg);
+  }
+  100% {
+    transform: scale(1) rotate(-2deg);
+  }
+}
+@keyframes sheet-up {
+  0% {
+    transform: translateY(40px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes timer-glow {
+  0%,
+  100% {
+    filter: none;
+  }
+  50% {
+    filter: brightness(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
