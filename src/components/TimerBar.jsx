@@ -1,14 +1,10 @@
-import { ClockGlyph } from './icons.jsx'
-
-/** Presentational pace bar; turns orange and glows when time runs low. */
-export function TimerBar({ pct }) {
-  const warn = pct <= 28
+export function TimerBar({ percent }) {
   return (
-    <div className="timer">
-      <ClockGlyph size={26} />
-      <div className="track">
-        <div className={`fill ${warn ? 'warn' : ''}`} style={{ width: `${Math.max(0, pct)}%` }} />
+    <div className="timer-wrap">
+      <div className="timer-track" aria-label="Timer">
+        <div className="timer-fill" style={{ width: `${percent}%` }} />
       </div>
+      <span className="timer-copy">{percent < 35 ? 'Trust your gut!' : percent < 70 ? 'Fresh or fake?' : 'Quick bite!'}</span>
     </div>
   )
 }

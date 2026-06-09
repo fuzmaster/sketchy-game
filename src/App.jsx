@@ -1,251 +1,353 @@
-/* ============================================================
-   SKETCHY!  —  app shell + game state machine
-   Screens: start → play → over, with feedback / paused / tutorial
-   sub-states layered over play.
-   ============================================================ */
-import { useEffect, useRef, useState } from 'react'
-import { StartScreen } from './screens/StartScreen.jsx'
-import { PlayScreen } from './screens/PlayScreen.jsx'
-import { GameOverScreen } from './screens/GameOverScreen.jsx'
-import { PauseOverlay } from './screens/PauseOverlay.jsx'
-import { TutorialOverlay } from './screens/TutorialOverlay.jsx'
-import { DevNotes } from './screens/DevNotes.jsx'
-import {
-  buildDeck,
-  cardDuration,
-  gradeFor,
-  scoreForCorrect,
-  timeBonus,
-  CARD_TIME,
-  FEEDBACK_HOLD,
-  MAX_LIVES,
-  STORAGE_KEYS,
-} from './game/rules.js'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { TRIVIA_MODES } from './game/triviaModes.js'
+import { cardDuration, FEEDBACK_HOLD, MAX_HEARTS, STORAGE_KEYS, SWIPE_THRESHOLD } from './game/rules.js'
+import { scoreForCorrect } from './game/scoring.js'
+import { shuffle } from './utils/shuffle.js'
+import { StartScreen } from './components/StartScreen.jsx'
+import { TutorialOverlay } from './components/TutorialOverlay.jsx'
+import { GameScreen } from './components/GameScreen.jsx'
+import { FeedbackOverlay } from './components/FeedbackOverlay.jsx'
+import { PauseMenu } from './components/PauseMenu.jsx'
+import { GameOverScreen } from './components/GameOverScreen.jsx'
+import { ReviewScreen } from './components/ReviewScreen.jsx'
 
-const freshStats = () => ({ answered: 0, correct: 0, scams: 0, bestStreak: 0, missed: 0 })
-const freshOutcomes = () => []
+const freshStats = () => ({ correct: 0, wrong: 0, missed: 0, bestStreak: 0 })
+const defaultProfiles = () => [
+  {
+    id: 'guest',
+    name: 'Guest',
+    bestScores: {},
+    gamesPlayed: 0,
+    totalCorrect: 0,
+    totalWrong: 0,
+    totalMissed: 0,
+  },
+]
 
-// Dev Notes are an internal design/handoff reference — available in dev builds
-// only, never shipped in a production bundle.
-const SHOW_DEV_NOTES = import.meta.env.DEV
+function loadProfiles() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.profiles) || 'null')
+    return Array.isArray(saved) && saved.length ? saved : defaultProfiles()
+  } catch {
+    return defaultProfiles()
+  }
+}
+
+function saveProfiles(profiles) {
+  localStorage.setItem(STORAGE_KEYS.profiles, JSON.stringify(profiles))
+}
+
+function progressKey(modeId, difficulty) {
+  return `${modeId}.${difficulty}`
+}
 
 export default function App() {
-  const [screen, setScreen] = useState('start') // start | play | over
-  const [deck, setDeck] = useState(() => buildDeck())
-  const [index, setIndex] = useState(0)
-  const [lives, setLives] = useState(MAX_LIVES)
+  const [gameState, setGameState] = useState('start')
+  const [previousState, setPreviousState] = useState('start')
+  const [profiles, setProfiles] = useState(() => loadProfiles())
+  const [activeProfileId, setActiveProfileId] = useState(
+    () => localStorage.getItem(STORAGE_KEYS.activeProfile) || loadProfiles()[0].id,
+  )
+  const [modeId, setModeId] = useState('food')
+  const [difficulty, setDifficulty] = useState('easy')
+  const mode = TRIVIA_MODES[modeId]
+  const [deck, setDeck] = useState(() => shuffle(mode.cards))
+  const [cardIndex, setCardIndex] = useState(0)
+  const [hearts, setHearts] = useState(MAX_HEARTS)
   const [score, setScore] = useState(0)
   const [streak, setStreak] = useState(0)
+  const [stats, setStats] = useState(() => freshStats())
+  const [results, setResults] = useState([])
   const [feedback, setFeedback] = useState(null)
-  const [paused, setPaused] = useState(false)
-  const [confettiSeed, setConfettiSeed] = useState(0)
-  const [summary, setSummary] = useState(null)
-  const [devOpen, setDevOpen] = useState(false)
-  const [tutorial, setTutorial] = useState(false)
-  const [best, setBest] = useState(() => Number(localStorage.getItem(STORAGE_KEYS.best) || 0))
+  const [timerResetKey, setTimerResetKey] = useState(0)
 
-  // Tallies live in a ref so deferred timeouts read fresh values.
-  const stats = useRef(freshStats())
-  const outcomes = useRef(freshOutcomes())
-  const timeRemaining = useRef(CARD_TIME)
+  const actionLocked = useRef(false)
+  const timeRemaining = useRef(cardDuration(0, difficulty) / 1000)
   const roundId = useRef(0)
   const activeCardId = useRef(null)
-  // Synchronous guard against double-resolution: a fast double-tap, or a
-  // timeout firing in the same tick as a swipe, could otherwise resolve a card
-  // twice before React commits the `feedback` state. A ref flips instantly.
-  const actionLocked = useRef(false)
+  const feedbackTimeout = useRef(null)
 
-  const card = deck[index]
-  const duration = cardDuration(index)
-  const locked = !!feedback || paused
-  activeCardId.current = card?.id ?? null
+  const activeProfile = profiles.find((profile) => profile.id === activeProfileId) || profiles[0]
+  const currentCard = deck[cardIndex]
+  const duration = cardDuration(cardIndex, difficulty)
+  const bestScore = activeProfile.bestScores?.[progressKey(modeId, difficulty)] || 0
+  activeCardId.current = currentCard?.id ?? null
 
-  // Hidden Dev Notes toggle — dev builds only; press "?".
+  const missedOrWrong = useMemo(
+    () => results.filter((result) => result.resultType === 'wrong' || result.resultType === 'missed'),
+    [results],
+  )
+
   useEffect(() => {
-    if (!SHOW_DEV_NOTES) return undefined
-    const onKey = (e) => {
-      if (e.key === '?') setDevOpen((o) => !o)
+    return () => {
+      if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current)
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  function startGame() {
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.activeProfile, activeProfileId)
+  }, [activeProfileId])
+
+  function createProfile(name) {
+    const cleanName = name.trim().slice(0, 18)
+    if (!cleanName) return
+    const profile = {
+      id: `profile-${Date.now()}`,
+      name: cleanName,
+      bestScores: {},
+      gamesPlayed: 0,
+      totalCorrect: 0,
+      totalWrong: 0,
+      totalMissed: 0,
+    }
+    const nextProfiles = [...profiles, profile]
+    setProfiles(nextProfiles)
+    saveProfiles(nextProfiles)
+    setActiveProfileId(profile.id)
+  }
+
+  function selectProfile(profileId) {
+    setActiveProfileId(profileId)
+  }
+
+  function resetTimerLock() {
+    actionLocked.current = false
+    timeRemaining.current = cardDuration(cardIndex, difficulty) / 1000
+    setTimerResetKey((key) => key + 1)
+  }
+
+  function startRun() {
+    if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current)
     roundId.current += 1
-    setDeck(buildDeck())
-    setIndex(0)
-    setLives(MAX_LIVES)
+    const nextDeck = shuffle(mode.cards)
+    setDeck(nextDeck)
+    setCardIndex(0)
+    setHearts(MAX_HEARTS)
     setScore(0)
     setStreak(0)
+    setStats(freshStats())
+    setResults([])
     setFeedback(null)
-    setPaused(false)
-    setSummary(null)
-    stats.current = freshStats()
-    outcomes.current = freshOutcomes()
     actionLocked.current = false
-    setTutorial(!localStorage.getItem(STORAGE_KEYS.tutorialSeen))
-    setScreen('play')
+    timeRemaining.current = cardDuration(0, difficulty) / 1000
+    setTimerResetKey((key) => key + 1)
+    const tutorialKey = `${STORAGE_KEYS.tutorialSeen}.${modeId}`
+    setGameState(sessionStorage.getItem(tutorialKey) ? 'playing' : 'tutorial')
   }
 
-  function dismissTutorial() {
-    setTutorial(false)
-    localStorage.setItem(STORAGE_KEYS.tutorialSeen, '1')
+  function finishTutorial() {
+    sessionStorage.setItem(`${STORAGE_KEYS.tutorialSeen}.${modeId}`, '1')
+    setGameState('playing')
+    resetTimerLock()
   }
 
-  function endGame(reason, finalScore) {
-    const round = outcomes.current
-    const answered = round.filter((o) => o.type !== 'slow')
-    const correct = answered.filter((o) => o.correct)
-    const missedCards = round.filter((o) => !o.correct)
-    const s = {
-      answered: answered.length,
-      correct: correct.length,
-      scams: correct.filter((o) => o.card.answer === 'sketchy').length,
-      bestStreak: stats.current.bestStreak,
-      missed: round.filter((o) => o.type === 'slow').length,
-    }
-    const accuracy = s.answered ? Math.round((s.correct / s.answered) * 100) : 0
-    const fs = finalScore != null ? finalScore : score
-    const newBest = fs > best
-    if (newBest) {
-      setBest(fs)
-      localStorage.setItem(STORAGE_KEYS.best, String(fs))
-    }
-    setSummary({
-      reason,
-      score: fs,
-      bestStreak: s.bestStreak,
-      scamsSpotted: s.scams,
-      accuracy,
-      grade: gradeFor(accuracy),
-      newBest,
-      answered: s.answered,
-      correct: s.correct,
-      skipped: s.missed,
-      reviewCards: missedCards,
+  function pause() {
+    if (gameState !== 'playing') return
+    setPreviousState(gameState)
+    setGameState('paused')
+  }
+
+  function resume() {
+    setGameState(previousState === 'playing' ? 'playing' : 'playing')
+  }
+
+  function goHome() {
+    if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current)
+    roundId.current += 1
+    setFeedback(null)
+    actionLocked.current = false
+    setGameState('start')
+  }
+
+  function updateProfileProgress(finalScore, finalStats) {
+    const key = progressKey(modeId, difficulty)
+    const nextProfiles = profiles.map((profile) => {
+      if (profile.id !== activeProfile.id) return profile
+      return {
+        ...profile,
+        bestScores: {
+          ...(profile.bestScores || {}),
+          [key]: Math.max(profile.bestScores?.[key] || 0, finalScore),
+        },
+        gamesPlayed: (profile.gamesPlayed || 0) + 1,
+        totalCorrect: (profile.totalCorrect || 0) + finalStats.correct,
+        totalWrong: (profile.totalWrong || 0) + finalStats.wrong,
+        totalMissed: (profile.totalMissed || 0) + finalStats.missed,
+      }
     })
-    setTimeout(() => setScreen('over'), 30)
+    setProfiles(nextProfiles)
+    saveProfiles(nextProfiles)
   }
 
-  // `finalScore` is threaded through so the end-of-game summary reflects the
-  // last card's points: setScore is async, so reading `score` here (or in
-  // endGame) would miss points earned on a winning final card.
-  function advance(nextLives, finalScore = score, resolvedCardId, resolvedRoundId) {
-    if (resolvedRoundId !== roundId.current || activeCardId.current !== resolvedCardId) return
-    actionLocked.current = false
+  function endRun(finalScore = score, finalStats = stats, finalResults = results) {
+    updateProfileProgress(finalScore, finalStats)
     setFeedback(null)
-    if (nextLives <= 0) {
-      endGame('phished', finalScore)
-      return
-    }
-    if (index + 1 >= deck.length) {
-      endGame('survived', finalScore)
-      return
-    }
-    setIndex((i) => i + 1)
+    setStats(finalStats)
+    setResults(finalResults)
+    setGameState('gameover')
   }
 
-  function handleDecide(choice, cardId) {
-    const resolvedCard = card
+  function advanceAfterFeedback(nextHearts, nextScore, nextStats, nextResults, resolvedCardId, resolvedRoundId) {
+    if (resolvedRoundId !== roundId.current || activeCardId.current !== resolvedCardId) return
+    setFeedback(null)
+    actionLocked.current = false
+
+    if (nextHearts <= 0 || cardIndex + 1 >= deck.length) {
+      endRun(nextScore, nextStats, nextResults)
+      return
+    }
+
+    setCardIndex((index) => index + 1)
+    setTimerResetKey((key) => key + 1)
+    setGameState('playing')
+  }
+
+  function resolveCard(playerAnswer, resultType = 'answered', cardId = currentCard?.id) {
+    const resolvedCard = currentCard
     const resolvedRoundId = roundId.current
     if (!resolvedCard || resolvedCard.id !== cardId) return
-    if (actionLocked.current || locked) return
+    if (actionLocked.current || gameState !== 'playing') return
     actionLocked.current = true
-    const correct = choice === resolvedCard.answer
-    const s = stats.current
-    s.answered++
-    let nextLives = lives
-    let nextScore = score
 
-    if (correct) {
-      s.correct++
-      if (resolvedCard.answer === 'sketchy') s.scams++
-      const nextStreak = streak + 1
-      s.bestStreak = Math.max(s.bestStreak, nextStreak)
-      const bonus = timeBonus(timeRemaining.current, cardDuration(index))
-      nextScore = score + scoreForCorrect(nextStreak, bonus)
-      setScore(nextScore)
-      setStreak(nextStreak)
-      setConfettiSeed((x) => x + 1)
-    } else {
-      nextLives = lives - 1
-      setLives(nextLives)
-      setStreak(0)
+    const wasMissed = resultType === 'missed'
+    const wasCorrect = !wasMissed && playerAnswer === resolvedCard.answer
+    const nextStreak = wasCorrect ? streak + 1 : 0
+    const nextHearts = !wasMissed && !wasCorrect ? hearts - 1 : hearts
+    const earned = wasCorrect ? scoreForCorrect(timeRemaining.current, nextStreak) : 0
+    const nextScore = score + earned
+    const result = {
+      card: resolvedCard,
+      playerAnswer,
+      correctAnswer: resolvedCard.answer,
+      wasCorrect,
+      resultType: wasMissed ? 'missed' : wasCorrect ? 'correct' : 'wrong',
+      explanation: resolvedCard.explanation,
     }
+    const nextStats = {
+      correct: stats.correct + (wasCorrect ? 1 : 0),
+      wrong: stats.wrong + (!wasMissed && !wasCorrect ? 1 : 0),
+      missed: stats.missed + (wasMissed ? 1 : 0),
+      bestStreak: Math.max(stats.bestStreak, nextStreak),
+    }
+    const nextResults = [...results, result]
 
-    outcomes.current.push({ type: correct ? 'correct' : 'wrong', card: resolvedCard, choice, correct })
-    setFeedback({
-      type: correct ? 'correct' : 'wrong',
-      cardId: resolvedCard.id,
-      answer: resolvedCard.answer,
-      why: resolvedCard.why,
-    })
-    setTimeout(
-      () => advance(nextLives, nextScore, resolvedCard.id, resolvedRoundId),
-      correct ? FEEDBACK_HOLD.correct : FEEDBACK_HOLD.wrong,
+    setScore(nextScore)
+    setHearts(nextHearts)
+    setStreak(nextStreak)
+    setStats(nextStats)
+    setResults(nextResults)
+    setFeedback(result)
+    setGameState('feedback')
+
+    feedbackTimeout.current = setTimeout(
+      () => advanceAfterFeedback(nextHearts, nextScore, nextStats, nextResults, resolvedCard.id, resolvedRoundId),
+      wasMissed ? FEEDBACK_HOLD.missed : wasCorrect ? FEEDBACK_HOLD.correct : FEEDBACK_HOLD.wrong,
     )
   }
 
-  function handleTimeout(cardId) {
-    const resolvedCard = card
-    const resolvedRoundId = roundId.current
-    if (!resolvedCard || resolvedCard.id !== cardId) return
-    if (actionLocked.current || locked) return
-    actionLocked.current = true
-    const s = stats.current
-    s.missed++ // tracked as "missed" — never a wrong answer, never in accuracy
-    outcomes.current.push({ type: 'slow', card: resolvedCard, choice: null, correct: false })
-    setStreak(0)
-    setFeedback({ type: 'slow', cardId: resolvedCard.id, answer: resolvedCard.answer, why: resolvedCard.why })
-    setTimeout(() => advance(lives, score, resolvedCard.id, resolvedRoundId), FEEDBACK_HOLD.slow)
+  function showReview() {
+    setGameState('review')
   }
 
-  return (
-    <div className="stage">
-      <div className="device">
-        <div className="screen">
-          {screen === 'start' && <StartScreen onPlay={startGame} />}
+  function closeReview() {
+    setGameState('gameover')
+  }
 
-          {screen === 'play' && (
-            <PlayScreen
-              card={card}
-              cardIndex={index}
-              lives={lives}
+  const answered = stats.correct + stats.wrong
+  const accuracy = answered ? Math.round((stats.correct / answered) * 100) : 0
+
+  return (
+    <main className="app-shell">
+      <section className="phone-frame" aria-label="Trivia game menu">
+        {gameState === 'start' && (
+          <StartScreen
+            activeProfile={activeProfile}
+            profiles={profiles}
+            mode={mode}
+            modeId={modeId}
+            difficulty={difficulty}
+            bestScore={bestScore}
+            onCreateProfile={createProfile}
+            onSelectProfile={selectProfile}
+            onModeChange={setModeId}
+            onDifficultyChange={setDifficulty}
+            onPlay={startRun}
+          />
+        )}
+
+        {gameState === 'tutorial' && (
+          <>
+            <GameScreen
+              card={currentCard}
+              cardIndex={cardIndex}
+              totalCards={deck.length}
+              hearts={hearts}
               score={score}
               streak={streak}
-              feedback={feedback}
-              paused={paused}
-              confettiSeed={confettiSeed}
               duration={duration}
-              tutorial={tutorial}
-              timerActive={screen === 'play' && !feedback && !paused && !tutorial}
+              labels={mode.labels}
+              timerActive={false}
+              timerResetKey={timerResetKey}
               timeRemaining={timeRemaining}
-              onDecide={handleDecide}
-              onTimeout={handleTimeout}
-              onPause={() => setPaused(true)}
+              swipeThreshold={SWIPE_THRESHOLD}
+              onAnswer={(answer, cardId) => resolveCard(answer, 'answered', cardId)}
+              onTimeout={(cardId) => resolveCard(null, 'missed', cardId)}
+              onPause={pause}
             />
-          )}
+            <TutorialOverlay mode={mode} onDone={finishTutorial} />
+          </>
+        )}
 
-          {screen === 'over' && summary && (
-            <GameOverScreen summary={summary} onAgain={startGame} onMenu={() => setScreen('start')} />
-          )}
+        {(gameState === 'playing' || gameState === 'feedback' || gameState === 'paused') && (
+          <GameScreen
+            card={currentCard}
+            cardIndex={cardIndex}
+            totalCards={deck.length}
+            hearts={hearts}
+            score={score}
+            streak={streak}
+            duration={duration}
+            labels={mode.labels}
+            timerActive={gameState === 'playing'}
+            timerResetKey={timerResetKey}
+            timeRemaining={timeRemaining}
+            swipeThreshold={SWIPE_THRESHOLD}
+            onAnswer={(answer, cardId) => resolveCard(answer, 'answered', cardId)}
+            onTimeout={(cardId) => resolveCard(null, 'missed', cardId)}
+            onPause={pause}
+          />
+        )}
 
-          {screen === 'play' && tutorial && <TutorialOverlay onDismiss={dismissTutorial} />}
+        {gameState === 'feedback' && feedback && <FeedbackOverlay result={feedback} labels={mode.labels} />}
 
-          {screen === 'play' && paused && (
-            <PauseOverlay
-              onResume={() => setPaused(false)}
-              onRestart={startGame}
-              onMenu={() => {
-                setPaused(false)
-                setScreen('start')
-              }}
-            />
-          )}
-        </div>
-      </div>
+        {gameState === 'paused' && <PauseMenu onResume={resume} onRestart={startRun} onHome={goHome} />}
 
-      {SHOW_DEV_NOTES && <DevNotes open={devOpen} onClose={() => setDevOpen(false)} />}
-    </div>
+        {gameState === 'gameover' && (
+          <GameOverScreen
+            mode={mode}
+            difficulty={difficulty}
+            profile={activeProfile}
+            score={score}
+            bestScore={Math.max(bestScore, score)}
+            accuracy={accuracy}
+            stats={stats}
+            hasReview={missedOrWrong.length > 0}
+            onPlayAgain={startRun}
+            onReview={showReview}
+            onHome={goHome}
+          />
+        )}
+
+        {gameState === 'review' && (
+          <ReviewScreen
+            results={missedOrWrong}
+            labels={mode.labels}
+            onPlayAgain={startRun}
+            onHome={goHome}
+            onBack={closeReview}
+          />
+        )}
+      </section>
+    </main>
   )
 }

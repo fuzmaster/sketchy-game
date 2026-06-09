@@ -1,8 +1,8 @@
 {
-  "name": "sketchy-game",
+  "name": "trivia-swipe",
   "private": true,
   "version": "1.0.0",
-  "description": "Sketchy! — Scam Spotter. A swipe-to-judge game: spot the scam before it spots you.",
+  "description": "Trivia Swipe — a local profile-based swipe trivia hub with food facts and scam spotting.",
   "type": "module",
   "scripts": {
     "dev": "vite",
