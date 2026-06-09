@@ -28,6 +28,7 @@ import { FeedbackOverlay } from './components/FeedbackOverlay.jsx'
 import { PauseMenu } from './components/PauseMenu.jsx'
 import { GameOverScreen } from './components/GameOverScreen.jsx'
 import { ReviewScreen } from './components/ReviewScreen.jsx'
+import { JbdFooter } from './components/JbdFooter.jsx'
 
 const freshStats = () => ({ correct: 0, wrong: 0, missed: 0, bestStreak: 0 })
 const defaultProfiles = () => [
@@ -293,6 +294,9 @@ export default function App() {
       correctAnswer: resolvedCard.answer,
       wasCorrect,
       resultType: wasMissed ? 'missed' : wasCorrect ? 'correct' : 'wrong',
+      pointsEarned: earned,
+      timeRemaining: timeRemaining.current,
+      streakAtAnswer: nextStreak,
       explanation: resolvedCard.explanation,
       deckId: modeId,
       timestamp: Date.now(),
@@ -442,6 +446,8 @@ export default function App() {
           />
         )}
       </section>
+
+      <JbdFooter />
     </main>
   )
 }

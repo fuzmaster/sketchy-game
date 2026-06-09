@@ -9,6 +9,13 @@
   --yellow: #ffd166;
   --soft-beige: #ede5da;
   --white: #fffdf8;
+  /* spec-named aliases (map onto the existing palette; no visual change) */
+  --teal: var(--gut-teal);
+  --orange: var(--fake);
+  --green: var(--fresh);
+  --red: var(--fake);
+  --app-bg: var(--gut-teal);
+  --footer-bg: var(--gut-teal);
   --shadow: 0 6px 0 rgba(31, 35, 40, 0.18), 0 18px 36px rgba(31, 35, 40, 0.16);
   font-family: "Trebuchet MS", "Arial Rounded MT Bold", system-ui, sans-serif;
   color: var(--charcoal);
@@ -37,13 +44,16 @@ button {
 
 .app-shell {
   min-height: 100%;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
   padding: 24px;
   background:
     radial-gradient(circle at 20% 14%, rgba(255, 246, 235, 0.24), transparent 32%),
     radial-gradient(circle at 82% 86%, rgba(255, 77, 45, 0.16), transparent 34%),
-    var(--gut-teal);
+    var(--app-bg);
 }
 
 .phone-frame {
@@ -1045,4 +1055,64 @@ h2 {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ===== Jacob Britten attribution footer =====================================
+   Lives on the teal app background below the phone frame. Desktop-only: hidden
+   on short / mobile viewports so it never reduces playable gameplay area. */
+.jbd-footer {
+  display: none;
+}
+
+@media (min-width: 720px) and (min-height: 820px) {
+  .phone-frame {
+    height: min(852px, 84vh);
+  }
+  .jbd-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    max-width: 440px;
+    text-align: center;
+    background: var(--footer-bg);
+    color: var(--cream);
+  }
+}
+
+.jbd-footer__by {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 246, 235, 0.92);
+}
+.jbd-footer__by strong {
+  color: var(--cream);
+}
+.jbd-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.jbd-footer__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.jbd-footer a {
+  color: rgba(255, 246, 235, 0.92);
+  text-decoration: none;
+  font-weight: 700;
+  border-bottom: 2px solid transparent;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+.jbd-footer a:hover,
+.jbd-footer a:focus-visible {
+  color: var(--yellow);
+  border-bottom-color: var(--orange);
+}
+.jbd-footer__sep {
+  color: rgba(255, 246, 235, 0.5);
 }
