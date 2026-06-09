@@ -6,6 +6,10 @@ import { shuffle } from './utils/shuffle.js'
 import { comboLabelFor } from './game/comboMilestones.js'
 import { validateDeck } from './game/deckValidation.js'
 import { chooseCardsAvoidingSeen, markCardsSeen } from './game/seenCards.js'
+import { authService } from './services/authService.js'
+import { progressService } from './services/progressService.js'
+import { leaderboardService } from './services/leaderboardService.js'
+import { DEFAULT_AVATAR_ID } from './game/avatars.js'
 import {
   isSoundEnabled,
   playCorrect,
@@ -28,45 +32,16 @@ import { FeedbackOverlay } from './components/FeedbackOverlay.jsx'
 import { PauseMenu } from './components/PauseMenu.jsx'
 import { GameOverScreen } from './components/GameOverScreen.jsx'
 import { ReviewScreen } from './components/ReviewScreen.jsx'
+import { AchievementsScreen } from './components/AchievementsScreen.jsx'
 import { JbdFooter } from './components/JbdFooter.jsx'
 
 const freshStats = () => ({ correct: 0, wrong: 0, missed: 0, bestStreak: 0 })
-const defaultProfiles = () => [
-  {
-    id: 'guest',
-    name: 'Guest',
-    bestScores: {},
-    gamesPlayed: 0,
-    totalCorrect: 0,
-    totalWrong: 0,
-    totalMissed: 0,
-  },
-]
-
-function loadProfiles() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEYS.profiles) || 'null')
-    return Array.isArray(saved) && saved.length ? saved : defaultProfiles()
-  } catch {
-    return defaultProfiles()
-  }
-}
-
-function saveProfiles(profiles) {
-  localStorage.setItem(STORAGE_KEYS.profiles, JSON.stringify(profiles))
-}
-
-function progressKey(modeId, difficulty) {
-  return `${modeId}.${difficulty}`
-}
 
 export default function App() {
   const [gameState, setGameState] = useState('start')
   const [previousState, setPreviousState] = useState('start')
-  const [profiles, setProfiles] = useState(() => loadProfiles())
-  const [activeProfileId, setActiveProfileId] = useState(
-    () => localStorage.getItem(STORAGE_KEYS.activeProfile) || loadProfiles()[0].id,
-  )
+  const [profiles, setProfiles] = useState(() => authService.listProfiles())
+  const [activeProfileId, setActiveProfileId] = useState(() => authService.getActiveProfileId())
   const [modeId, setModeId] = useState('food')
   const [difficulty, setDifficulty] = useState('normal')
   const mode = TRIVIA_MODES[modeId]
@@ -81,17 +56,20 @@ export default function App() {
   const [comboBadge, setComboBadge] = useState(null)
   const [soundEnabled, setSoundEnabledState] = useState(() => isSoundEnabled())
   const [timerResetKey, setTimerResetKey] = useState(0)
+  const [runAchievements, setRunAchievements] = useState([])
+  const [achievementToast, setAchievementToast] = useState(null)
 
   const actionLocked = useRef(false)
   const timeRemaining = useRef(cardDuration(0, difficulty) / 1000)
   const roundId = useRef(0)
   const activeCardId = useRef(null)
   const feedbackTimeout = useRef(null)
+  const toastTimeout = useRef(null)
 
   const activeProfile = profiles.find((profile) => profile.id === activeProfileId) || profiles[0]
   const currentCard = deck[cardIndex]
   const duration = cardDuration(cardIndex, difficulty)
-  const bestScore = activeProfile.bestScores?.[progressKey(modeId, difficulty)] || 0
+  const bestScore = leaderboardService.bestScore(activeProfile, modeId)
   activeCardId.current = currentCard?.id ?? null
 
   const missedOrWrong = useMemo(
@@ -102,6 +80,7 @@ export default function App() {
   useEffect(() => {
     return () => {
       if (feedbackTimeout.current) clearTimeout(feedbackTimeout.current)
+      if (toastTimeout.current) clearTimeout(toastTimeout.current)
     }
   }, [])
 
@@ -127,30 +106,40 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.activeProfile, activeProfileId)
+    authService.setActiveProfileId(activeProfileId)
   }, [activeProfileId])
 
-  function createProfile(name) {
-    const cleanName = name.trim().slice(0, 18)
-    if (!cleanName) return
-    const profile = {
-      id: `profile-${Date.now()}`,
-      name: cleanName,
-      bestScores: {},
-      gamesPlayed: 0,
-      totalCorrect: 0,
-      totalWrong: 0,
-      totalMissed: 0,
-    }
-    const nextProfiles = [...profiles, profile]
-    setProfiles(nextProfiles)
-    saveProfiles(nextProfiles)
-    setActiveProfileId(profile.id)
+  function showAchievementToast(unlocked) {
+    if (!unlocked.length) return
+    setAchievementToast(unlocked[0])
+    playStreak()
+    if (toastTimeout.current) clearTimeout(toastTimeout.current)
+    toastTimeout.current = setTimeout(() => setAchievementToast(null), 2600)
+  }
+
+  function createProfile(name, avatar = DEFAULT_AVATAR_ID) {
+    const result = authService.createProfile({ name, avatar })
+    if (!result) return
+    setProfiles(result.profiles)
+    setActiveProfileId(result.profile.id)
   }
 
   function selectProfile(profileId) {
     playTap()
     setActiveProfileId(profileId)
+  }
+
+  function setProfileAvatar(avatarId) {
+    playTap()
+    setProfiles(authService.updateProfile(activeProfileId, { avatar: avatarId }))
+  }
+
+  function resetLocalData() {
+    const fresh = authService.resetAll()
+    setProfiles(fresh)
+    setActiveProfileId(fresh[0].id)
+    setRunAchievements([])
+    setGameState('start')
   }
 
   function changeMode(nextModeId) {
@@ -192,6 +181,7 @@ export default function App() {
     setResults([])
     setFeedback(null)
     setComboBadge(null)
+    setRunAchievements([])
     actionLocked.current = false
     timeRemaining.current = cardDuration(0, difficulty) / 1000
     setTimerResetKey((key) => key + 1)
@@ -215,7 +205,7 @@ export default function App() {
 
   function resume() {
     playResume()
-    setGameState(previousState === 'playing' ? 'playing' : 'playing')
+    setGameState('playing')
   }
 
   function goHome() {
@@ -227,32 +217,33 @@ export default function App() {
     setGameState('start')
   }
 
-  function updateProfileProgress(finalScore, finalStats) {
-    const key = progressKey(modeId, difficulty)
-    const nextProfiles = profiles.map((profile) => {
-      if (profile.id !== activeProfile.id) return profile
-      return {
-        ...profile,
-        bestScores: {
-          ...(profile.bestScores || {}),
-          [key]: Math.max(profile.bestScores?.[key] || 0, finalScore),
-        },
-        gamesPlayed: (profile.gamesPlayed || 0) + 1,
-        totalCorrect: (profile.totalCorrect || 0) + finalStats.correct,
-        totalWrong: (profile.totalWrong || 0) + finalStats.wrong,
-        totalMissed: (profile.totalMissed || 0) + finalStats.missed,
-      }
-    })
-    setProfiles(nextProfiles)
-    saveProfiles(nextProfiles)
+  function openAchievements() {
+    playTap()
+    setPreviousState(gameState)
+    setGameState('achievements')
   }
 
-  function endRun(finalScore = score, finalStats = stats, finalResults = results) {
+  function closeAchievements() {
+    playTap()
+    setGameState(previousState === 'gameover' ? 'gameover' : 'start')
+  }
+
+  function endRun(finalScore, finalStats, finalResults, heartsRemaining) {
     markCardsSeen(
       finalResults.map((result) => result.card),
       { profileId: activeProfile.id, deckId: modeId, maxStored: mode.cards.length },
     )
-    updateProfileProgress(finalScore, finalStats)
+    const { newAchievements } = progressService.recordRun(activeProfile.id, {
+      deckId: modeId,
+      score: finalScore,
+      stats: finalStats,
+      results: finalResults,
+      heartsRemaining,
+      totalCards: deck.length,
+    })
+    setProfiles(authService.listProfiles())
+    setRunAchievements(newAchievements)
+    showAchievementToast(newAchievements)
     playGameOver()
     setFeedback(null)
     setStats(finalStats)
@@ -266,7 +257,7 @@ export default function App() {
     actionLocked.current = false
 
     if (nextHearts <= 0 || cardIndex + 1 >= deck.length) {
-      endRun(nextScore, nextStats, nextResults)
+      endRun(nextScore, nextStats, nextResults, nextHearts)
       return
     }
 
@@ -336,6 +327,12 @@ export default function App() {
   }
 
   function showReview() {
+    const { newAchievements } = progressService.markReviewOpened(activeProfile.id)
+    if (newAchievements.length) {
+      setProfiles(authService.listProfiles())
+      setRunAchievements((prev) => [...prev, ...newAchievements])
+      showAchievementToast(newAchievements)
+    }
     setGameState('review')
   }
 
@@ -360,9 +357,12 @@ export default function App() {
             soundEnabled={soundEnabled}
             onCreateProfile={createProfile}
             onSelectProfile={selectProfile}
+            onSetAvatar={setProfileAvatar}
             onModeChange={changeMode}
             onDifficultyChange={changeDifficulty}
             onToggleSound={toggleSound}
+            onOpenAchievements={openAchievements}
+            onResetData={resetLocalData}
             onPlay={startRun}
           />
         )}
@@ -416,6 +416,17 @@ export default function App() {
 
         {gameState === 'feedback' && feedback && <FeedbackOverlay result={feedback} labels={mode.labels} />}
         {comboBadge && <div className="combo-badge">{comboBadge}</div>}
+        {achievementToast && (
+          <div className="achievement-toast" role="status">
+            <span className="achievement-toast__icon" aria-hidden="true">
+              {achievementToast.icon}
+            </span>
+            <span className="achievement-toast__text">
+              <small>Achievement unlocked</small>
+              <strong>{achievementToast.name}</strong>
+            </span>
+          </div>
+        )}
 
         {gameState === 'paused' && <PauseMenu onResume={resume} onRestart={startRun} onHome={goHome} />}
 
@@ -430,10 +441,16 @@ export default function App() {
             stats={stats}
             hasReview={missedOrWrong.length > 0}
             takeaway={mode.takeaway}
+            newAchievements={runAchievements}
             onPlayAgain={startRun}
             onReview={showReview}
+            onAchievements={openAchievements}
             onHome={goHome}
           />
+        )}
+
+        {gameState === 'achievements' && (
+          <AchievementsScreen profile={activeProfile} onBack={closeAchievements} />
         )}
 
         {gameState === 'review' && (

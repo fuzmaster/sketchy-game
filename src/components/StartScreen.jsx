@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { DIFFICULTIES, TRIVIA_MODES } from '../game/triviaModes.js'
+import { ACHIEVEMENTS } from '../game/achievements.js'
+import { AVATARS, DEFAULT_AVATAR_ID, getAvatar } from '../game/avatars.js'
+import { AvatarBadge, AvatarPicker } from './AvatarPicker.jsx'
 
 export function StartScreen({
   activeProfile,
@@ -11,17 +14,32 @@ export function StartScreen({
   soundEnabled,
   onCreateProfile,
   onSelectProfile,
+  onSetAvatar,
   onModeChange,
   onDifficultyChange,
   onToggleSound,
+  onOpenAchievements,
+  onResetData,
   onPlay,
 }) {
   const [name, setName] = useState('')
+  const [newAvatar, setNewAvatar] = useState(DEFAULT_AVATAR_ID)
+  const [editingAvatar, setEditingAvatar] = useState(false)
+
+  const unlockedCount = ACHIEVEMENTS.filter((a) => activeProfile.achievements?.[a.id]).length
+  const profileAvatar = getAvatar(activeProfile.avatar)
 
   function submitProfile(event) {
     event.preventDefault()
-    onCreateProfile(name)
+    onCreateProfile(name, newAvatar)
     setName('')
+    setNewAvatar(DEFAULT_AVATAR_ID)
+  }
+
+  function confirmReset() {
+    if (window.confirm('Reset all local Gut Check data on this device? Profiles, scores, and achievements will be erased.')) {
+      onResetData()
+    }
   }
 
   return (
@@ -31,14 +49,22 @@ export function StartScreen({
           <span />
         </div>
         <h1>Gut Check</h1>
-        <p>Swipe with your gut. Learn the tell.</p>
+        <p>Trust your gut. Swipe fast. Learn something.</p>
       </div>
 
       <section className="launch-panel">
         <div className="profile-strip">
+          <button
+            type="button"
+            className="profile-avatar-button"
+            aria-label="Change avatar"
+            onClick={() => setEditingAvatar((open) => !open)}
+          >
+            <AvatarBadge avatar={profileAvatar} size={44} />
+          </button>
           <div>
             <strong>{activeProfile.name}</strong>
-            <span>Saved on this device</span>
+            <span>Local profile · this device</span>
           </div>
           <select aria-label="Choose player" value={activeProfile.id} onChange={(event) => onSelectProfile(event.target.value)}>
             {profiles.map((profile) => (
@@ -49,7 +75,25 @@ export function StartScreen({
           </select>
         </div>
 
+        {editingAvatar && (
+          <AvatarPicker
+            value={activeProfile.avatar}
+            onChange={(id) => {
+              onSetAvatar(id)
+            }}
+          />
+        )}
+
         <form className="profile-form compact-profile-form" onSubmit={submitProfile}>
+          <button
+            type="button"
+            className="new-avatar-chip"
+            aria-label="Pick avatar for new player"
+            title={getAvatar(newAvatar).name}
+            onClick={() => setNewAvatar((current) => nextAvatarId(current))}
+          >
+            <AvatarBadge avatar={newAvatar} size={34} />
+          </button>
           <input
             value={name}
             maxLength={18}
@@ -98,10 +142,26 @@ export function StartScreen({
           Play
         </button>
 
-        <button className="sound-toggle" aria-label={soundEnabled ? 'Sound On' : 'Muted'} onClick={onToggleSound}>
-          {soundEnabled ? 'Sound On' : 'Muted'}
+        <div className="menu-actions">
+          <button type="button" className="ghost-button" onClick={onOpenAchievements}>
+            🏅 Achievements {unlockedCount}/{ACHIEVEMENTS.length}
+          </button>
+          <button type="button" className="ghost-button" onClick={onToggleSound} aria-label={soundEnabled ? 'Sound On' : 'Muted'}>
+            {soundEnabled ? '🔊 Sound On' : '🔇 Muted'}
+          </button>
+        </div>
+
+        <button type="button" className="reset-link" onClick={confirmReset}>
+          Reset local data
         </button>
       </section>
     </div>
   )
+}
+
+const AVATAR_IDS = AVATARS.map((avatar) => avatar.id)
+
+function nextAvatarId(currentId) {
+  const index = AVATAR_IDS.indexOf(currentId)
+  return AVATAR_IDS[(index + 1) % AVATAR_IDS.length]
 }

@@ -1,3 +1,5 @@
+import { AvatarBadge } from './AvatarPicker.jsx'
+
 export function GameOverScreen({
   mode,
   difficulty,
@@ -8,8 +10,10 @@ export function GameOverScreen({
   stats,
   hasReview,
   takeaway,
+  newAchievements = [],
   onPlayAgain,
   onReview,
+  onAchievements,
   onHome,
 }) {
   const title = accuracy >= 80 ? 'Good job!' : stats.missed > stats.correct ? 'Kitchen closed!' : 'Nice run!'
@@ -19,7 +23,8 @@ export function GameOverScreen({
       <div className="result-burst">
         <span>🍽</span>
         <h1>{title}</h1>
-        <p>
+        <p className="gameover-identity">
+          <AvatarBadge avatar={profile.avatar} size={26} />
           {profile.name} · {mode.shortTitle} · {difficulty}
         </p>
       </div>
@@ -32,6 +37,20 @@ export function GameOverScreen({
         <Stat label="Wrong" value={stats.wrong} />
         <Stat label="Missed" value={stats.missed} />
       </div>
+
+      {newAchievements.length > 0 && (
+        <div className="unlocked-card">
+          <strong>Achievement{newAchievements.length > 1 ? 's' : ''} unlocked</strong>
+          <ul>
+            {newAchievements.map((achievement) => (
+              <li key={achievement.id}>
+                <span aria-hidden="true">{achievement.icon}</span> {achievement.name}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="takeaway-card">
         <strong>What to watch for next time</strong>
         <p>{takeaway}</p>
@@ -42,6 +61,9 @@ export function GameOverScreen({
         </button>
         <button className="secondary-button" onClick={onReview} disabled={!hasReview}>
           Review Missed
+        </button>
+        <button className="secondary-button" onClick={onAchievements}>
+          Achievements
         </button>
         <button className="secondary-button" onClick={onHome}>
           Home
