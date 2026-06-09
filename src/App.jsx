@@ -24,6 +24,10 @@ import {
 
 const freshStats = () => ({ answered: 0, correct: 0, scams: 0, bestStreak: 0, missed: 0 })
 
+// Dev Notes are an internal design/handoff reference — available in dev builds
+// only, never shipped in a production bundle.
+const SHOW_DEV_NOTES = import.meta.env.DEV
+
 export default function App() {
   const [screen, setScreen] = useState('start') // start | play | over
   const [deck, setDeck] = useState(() => buildDeck())
@@ -42,13 +46,18 @@ export default function App() {
   // Tallies live in a ref so deferred timeouts read fresh values.
   const stats = useRef(freshStats())
   const timeRemaining = useRef(CARD_TIME)
+  // Synchronous guard against double-resolution: a fast double-tap, or a
+  // timeout firing in the same tick as a swipe, could otherwise resolve a card
+  // twice before React commits the `feedback` state. A ref flips instantly.
+  const actionLocked = useRef(false)
 
   const card = deck[index]
   const duration = cardDuration(index)
   const locked = !!feedback || paused
 
-  // Hidden Dev Notes toggle (not in the public UI) — press "?".
+  // Hidden Dev Notes toggle — dev builds only; press "?".
   useEffect(() => {
+    if (!SHOW_DEV_NOTES) return undefined
     const onKey = (e) => {
       if (e.key === '?') setDevOpen((o) => !o)
     }
@@ -66,6 +75,7 @@ export default function App() {
     setPaused(false)
     setSummary(null)
     stats.current = freshStats()
+    actionLocked.current = false
     setTutorial(!localStorage.getItem(STORAGE_KEYS.tutorialSeen))
     setScreen('play')
   }
@@ -96,25 +106,31 @@ export default function App() {
     setTimeout(() => setScreen('over'), 30)
   }
 
-  function advance(nextLives) {
+  // `finalScore` is threaded through so the end-of-game summary reflects the
+  // last card's points: setScore is async, so reading `score` here (or in
+  // endGame) would miss points earned on a winning final card.
+  function advance(nextLives, finalScore = score) {
+    actionLocked.current = false
     setFeedback(null)
     if (nextLives <= 0) {
-      endGame('phished')
+      endGame('phished', finalScore)
       return
     }
     if (index + 1 >= deck.length) {
-      endGame('survived')
+      endGame('survived', finalScore)
       return
     }
     setIndex((i) => i + 1)
   }
 
   function handleDecide(choice) {
-    if (locked) return
+    if (actionLocked.current || locked) return
+    actionLocked.current = true
     const correct = choice === card.answer
     const s = stats.current
     s.answered++
     let nextLives = lives
+    let nextScore = score
 
     if (correct) {
       s.correct++
@@ -122,7 +138,8 @@ export default function App() {
       const nextStreak = streak + 1
       s.bestStreak = Math.max(s.bestStreak, nextStreak)
       const bonus = timeBonus(timeRemaining.current, cardDuration(index))
-      setScore((v) => v + scoreForCorrect(nextStreak, bonus))
+      nextScore = score + scoreForCorrect(nextStreak, bonus)
+      setScore(nextScore)
       setStreak(nextStreak)
       setConfettiSeed((x) => x + 1)
     } else {
@@ -132,16 +149,17 @@ export default function App() {
     }
 
     setFeedback({ type: correct ? 'correct' : 'wrong', answer: card.answer, why: card.why })
-    setTimeout(() => advance(nextLives), correct ? FEEDBACK_HOLD.correct : FEEDBACK_HOLD.wrong)
+    setTimeout(() => advance(nextLives, nextScore), correct ? FEEDBACK_HOLD.correct : FEEDBACK_HOLD.wrong)
   }
 
   function handleTimeout() {
-    if (locked) return
+    if (actionLocked.current || locked) return
+    actionLocked.current = true
     const s = stats.current
     s.missed++ // tracked as "missed" — never a wrong answer, never in accuracy
     setStreak(0)
     setFeedback({ type: 'slow', answer: card.answer, why: card.why })
-    setTimeout(() => advance(lives), FEEDBACK_HOLD.slow)
+    setTimeout(() => advance(lives, score), FEEDBACK_HOLD.slow)
   }
 
   return (
@@ -189,7 +207,7 @@ export default function App() {
         </div>
       </div>
 
-      <DevNotes open={devOpen} onClose={() => setDevOpen(false)} />
+      {SHOW_DEV_NOTES && <DevNotes open={devOpen} onClose={() => setDevOpen(false)} />}
     </div>
   )
 }

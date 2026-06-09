@@ -28,6 +28,9 @@ pnpm-debug.log*
 
 # local env
 *.local
+.env
+.env.*
 
-# local agent / editor tooling
+# local agent / editor tooling & machine-local config
 .claude/
+*.local.json
