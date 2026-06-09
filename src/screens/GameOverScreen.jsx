@@ -176,11 +176,21 @@ export function GameOverScreen({ summary, onAgain, onMenu }) {
             {reviewOpen ? 'HIDE REVIEW' : `REVIEW MISSED (${reviewCards.length})`}
           </Button>
           {reviewOpen && (
-            <div className="review-list">
-              {reviewCards.map((outcome) => (
-                <ReviewCard key={`${outcome.card.id}-${outcome.type}`} outcome={outcome} />
-              ))}
-            </div>
+            <>
+              <div className="review-actions">
+                <Button variant="teal" onClick={onAgain} style={{ fontSize: 14, padding: '10px 0', borderRadius: 14 }}>
+                  PLAY AGAIN
+                </Button>
+                <Button variant="cream" onClick={onMenu} style={{ fontSize: 14, padding: '10px 0', borderRadius: 14 }}>
+                  HOME
+                </Button>
+              </div>
+              <div className="review-list">
+                {reviewCards.map((outcome) => (
+                  <ReviewCard key={`${outcome.card.id}-${outcome.type}`} outcome={outcome} />
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}

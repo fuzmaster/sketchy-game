@@ -48,6 +48,8 @@ export default function App() {
   const stats = useRef(freshStats())
   const outcomes = useRef(freshOutcomes())
   const timeRemaining = useRef(CARD_TIME)
+  const roundId = useRef(0)
+  const activeCardId = useRef(null)
   // Synchronous guard against double-resolution: a fast double-tap, or a
   // timeout firing in the same tick as a swipe, could otherwise resolve a card
   // twice before React commits the `feedback` state. A ref flips instantly.
@@ -56,6 +58,7 @@ export default function App() {
   const card = deck[index]
   const duration = cardDuration(index)
   const locked = !!feedback || paused
+  activeCardId.current = card?.id ?? null
 
   // Hidden Dev Notes toggle — dev builds only; press "?".
   useEffect(() => {
@@ -68,6 +71,7 @@ export default function App() {
   }, [])
 
   function startGame() {
+    roundId.current += 1
     setDeck(buildDeck())
     setIndex(0)
     setLives(MAX_LIVES)
@@ -126,7 +130,8 @@ export default function App() {
   // `finalScore` is threaded through so the end-of-game summary reflects the
   // last card's points: setScore is async, so reading `score` here (or in
   // endGame) would miss points earned on a winning final card.
-  function advance(nextLives, finalScore = score) {
+  function advance(nextLives, finalScore = score, resolvedCardId, resolvedRoundId) {
+    if (resolvedRoundId !== roundId.current || activeCardId.current !== resolvedCardId) return
     actionLocked.current = false
     setFeedback(null)
     if (nextLives <= 0) {
@@ -140,10 +145,13 @@ export default function App() {
     setIndex((i) => i + 1)
   }
 
-  function handleDecide(choice) {
+  function handleDecide(choice, cardId) {
+    const resolvedCard = card
+    const resolvedRoundId = roundId.current
+    if (!resolvedCard || resolvedCard.id !== cardId) return
     if (actionLocked.current || locked) return
     actionLocked.current = true
-    const correct = choice === card.answer
+    const correct = choice === resolvedCard.answer
     const s = stats.current
     s.answered++
     let nextLives = lives
@@ -151,7 +159,7 @@ export default function App() {
 
     if (correct) {
       s.correct++
-      if (card.answer === 'sketchy') s.scams++
+      if (resolvedCard.answer === 'sketchy') s.scams++
       const nextStreak = streak + 1
       s.bestStreak = Math.max(s.bestStreak, nextStreak)
       const bonus = timeBonus(timeRemaining.current, cardDuration(index))
@@ -165,20 +173,31 @@ export default function App() {
       setStreak(0)
     }
 
-    outcomes.current.push({ type: correct ? 'correct' : 'wrong', card, choice, correct })
-    setFeedback({ type: correct ? 'correct' : 'wrong', answer: card.answer, why: card.why })
-    setTimeout(() => advance(nextLives, nextScore), correct ? FEEDBACK_HOLD.correct : FEEDBACK_HOLD.wrong)
+    outcomes.current.push({ type: correct ? 'correct' : 'wrong', card: resolvedCard, choice, correct })
+    setFeedback({
+      type: correct ? 'correct' : 'wrong',
+      cardId: resolvedCard.id,
+      answer: resolvedCard.answer,
+      why: resolvedCard.why,
+    })
+    setTimeout(
+      () => advance(nextLives, nextScore, resolvedCard.id, resolvedRoundId),
+      correct ? FEEDBACK_HOLD.correct : FEEDBACK_HOLD.wrong,
+    )
   }
 
-  function handleTimeout() {
+  function handleTimeout(cardId) {
+    const resolvedCard = card
+    const resolvedRoundId = roundId.current
+    if (!resolvedCard || resolvedCard.id !== cardId) return
     if (actionLocked.current || locked) return
     actionLocked.current = true
     const s = stats.current
     s.missed++ // tracked as "missed" — never a wrong answer, never in accuracy
-    outcomes.current.push({ type: 'slow', card, choice: null, correct: false })
+    outcomes.current.push({ type: 'slow', card: resolvedCard, choice: null, correct: false })
     setStreak(0)
-    setFeedback({ type: 'slow', answer: card.answer, why: card.why })
-    setTimeout(() => advance(lives, score), FEEDBACK_HOLD.slow)
+    setFeedback({ type: 'slow', cardId: resolvedCard.id, answer: resolvedCard.answer, why: resolvedCard.why })
+    setTimeout(() => advance(lives, score, resolvedCard.id, resolvedRoundId), FEEDBACK_HOLD.slow)
   }
 
   return (

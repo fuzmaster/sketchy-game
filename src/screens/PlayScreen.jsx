@@ -45,7 +45,7 @@ export function PlayScreen({
   const commit = (side) => {
     if (locked) return
     setFly(side)
-    onDecide(side)
+    onDecide(side, card.id)
   }
 
   const down = (e) => {
@@ -115,7 +115,7 @@ export function PlayScreen({
           duration={duration}
           active={timerActive}
           resetKey={card.id}
-          onTimeout={onTimeout}
+          onTimeout={() => onTimeout(card.id)}
           remainingRef={timeRemaining}
         />
       </div>
