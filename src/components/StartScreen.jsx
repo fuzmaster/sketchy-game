@@ -3,6 +3,7 @@ import { COMING_SOON_DECKS, DIFFICULTIES, TRIVIA_MODES } from '../game/triviaMod
 import { ACHIEVEMENTS } from '../game/achievements.js'
 import { AVATARS, DEFAULT_AVATAR_ID, getAvatar } from '../game/avatars.js'
 import { AvatarBadge, AvatarPicker } from './AvatarPicker.jsx'
+import { Mascot } from './Mascot.jsx'
 
 export function StartScreen({
   activeProfile,
@@ -45,9 +46,7 @@ export function StartScreen({
   return (
     <div className="screen start-screen menu-screen">
       <div className="brand-lockup compact">
-        <div className="gut-check-mark" aria-hidden="true">
-          <span />
-        </div>
+        <Mascot size={108} />
         <h1>Gut Check</h1>
         <p>Trust your gut. Swipe fast. Learn something.</p>
       </div>

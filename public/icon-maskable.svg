@@ -1,6 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Gut Check">
   <rect width="512" height="512" fill="#00A79B"/>
-  <path d="M176 268 L236 328 L356 184" fill="none" stroke="#1F2328" stroke-width="50" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M176 268 L236 328 L356 184" fill="none" stroke="#FFF6EB" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="360" cy="166" r="26" fill="#FF4D2D" stroke="#1F2328" stroke-width="11"/>
+  <circle cx="176" cy="292" r="28" fill="#FF4D2D" opacity="0.5"/>
+  <circle cx="336" cy="292" r="28" fill="#FF4D2D" opacity="0.5"/>
+  <circle cx="206" cy="250" r="50" fill="#FFF6EB" stroke="#1F2328" stroke-width="14"/>
+  <circle cx="306" cy="250" r="50" fill="#FFF6EB" stroke="#1F2328" stroke-width="14"/>
+  <circle cx="214" cy="258" r="22" fill="#1F2328"/>
+  <circle cx="314" cy="258" r="22" fill="#1F2328"/>
+  <circle cx="222" cy="250" r="8" fill="#FFF6EB"/>
+  <circle cx="322" cy="250" r="8" fill="#FFF6EB"/>
+  <path d="M214 320 q42 38 84 0" fill="none" stroke="#1F2328" stroke-width="16" stroke-linecap="round"/>
 </svg>

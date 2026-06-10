@@ -36,19 +36,27 @@ hand-drawn outlines.
 4. (Optional) a **1200×630 OG/social image** using the icon + tagline on a
    teal background.
 
-### Concept direction (the current mark is unclear — please improve it)
-The mark should communicate **"quick gut judgment → correct"**. Explore these,
-then recommend one:
-- **A) Swipe-check:** a tilted card/speech-bubble with a bold green/teal
-  **checkmark** cutting across it, plus a small motion swoosh implying a swipe.
-- **B) Gut + check:** a friendly rounded "gut/belly" or thumb shape paired with
-  a checkmark — literal "gut check."
-- **C) Tap target:** a bold check inside a rounded square "button," with a tiny
-  spark/streak accent (teal + orange split), echoing the app's two-color split.
+### Direction: a cute mascot (kid-friendly)
+We want the brand led by a **cute, friendly mascot** so it appeals to kids as
+well as adults — think approachable sticker character, not a corporate logo.
+There's already a working in-app placeholder mascot ("Gus") to build on: a
+rounded **teal blob** with a thick charcoal outline, big friendly cream eyes,
+rosy orange cheeks, a little smile, a tiny sprout + orange spark on its head,
+and a cream **belly badge with a checkmark** (ties to "Gut Check → correct").
+See `src/components/Mascot.jsx`.
 
-Keep it to **2–3 shapes max**, one clear focal point, high contrast. Avoid:
-fine detail, photoreal, gradients-as-crutch, tiny text inside the icon,
-copyrighted characters, real faces.
+Please design a polished, professional version of this mascot:
+- **Personality:** warm, curious, a little cheeky — encouraging, never mean.
+- **Expressions / poses** (a small set we can swap in during play): idle,
+  happy/celebrate (correct), oops/wince (wrong), and sleepy/"too slow" (timeout).
+- **Animation-friendly:** clean separable parts (eyes, mouth, arms) so it can
+  blink, bob, and react. Subtle motion only.
+- **App icon:** a simplified **mascot face** that reads at 48px and as a
+  favicon (the current placeholder icon is a teal tile with the mascot's face).
+
+Keep shapes bold and few, high contrast, thick charcoal outlines. Avoid: fine
+detail, photoreal, gradient-heavy rendering, tiny text inside the icon,
+copyrighted characters, real human faces.
 
 ### Deliverables
 - **SVG** (preferred) with transparent background, plus PNG exports at

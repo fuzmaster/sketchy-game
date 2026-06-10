@@ -1487,3 +1487,43 @@ h2 {
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* ===== mascot ("Gus") ===================================================== */
+.mascot {
+  display: block;
+  overflow: visible;
+}
+.mascot-bob {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mascot-bob 2.6s ease-in-out infinite;
+}
+@keyframes mascot-bob {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-7px) rotate(1.5deg); }
+}
+.mascot-eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: mascot-blink 4.2s ease-in-out infinite;
+}
+@keyframes mascot-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.12); }
+}
+.mascot-wave {
+  transform-box: fill-box;
+  transform-origin: 100% 0%;
+  animation: mascot-wave 2.6s ease-in-out infinite;
+}
+@keyframes mascot-wave {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-18deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot-bob,
+  .mascot-eyes,
+  .mascot-wave {
+    animation: none;
+  }
+}
