@@ -22,6 +22,7 @@ build streaks — and pick up something useful along the way.
 - 🔊 Generated Web Audio sound effects with a persisted mute toggle.
 - 🧠 First-session tutorial, pause, restart, and game-over summary.
 - 💾 Everything saved locally in `localStorage` — no account or backend required.
+- 📲 Installable PWA — add to home screen and play offline (static app, no backend).
 
 ## Game Modes
 

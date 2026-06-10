@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Gut Check">
+  <rect x="38" y="38" width="436" height="436" rx="112" fill="#00A79B" stroke="#1F2328" stroke-width="22"/>
+  <path d="M150 272 L222 344 L372 168" fill="none" stroke="#1F2328" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M150 272 L222 344 L372 168" fill="none" stroke="#FFF6EB" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="388" cy="132" r="30" fill="#FF4D2D" stroke="#1F2328" stroke-width="12"/>
+</svg>
