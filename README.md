@@ -25,7 +25,9 @@ build streaks — and pick up something useful along the way.
 
 ## Game Modes
 
-- **Practice / Classic** — randomized local rounds. This is the current mode.
+- **Endless** — the current mode. A run keeps going until you run out of
+  hearts; questions recycle from the deck (reshuffled, avoiding immediate
+  repeats) so you never "run out." Difficulty ramps with cards answered.
 - _Daily Challenge, Ranked Sprint_ — planned, and only meaningful with a real
   backend (see **Roadmap** and the account-ready notes below).
 
@@ -38,7 +40,8 @@ build streaks — and pick up something useful along the way.
 | Quick Math | ✅ Playable | multiple-choice (tap / keys 1–4) |
 | Weird Facts | ✅ Playable | swipe: No Way ⟵ / ⟶ True (sourced facts) |
 | Animal Facts | ✅ Playable | swipe: Nope ⟵ / ⟶ For Real (sourced facts) |
-| History Hits · Science Snacks | 🔜 Coming soon | — |
+| History Hits | ✅ Playable | multiple-choice — which came first / when (sourced) |
+| Science Snacks | ✅ Playable | swipe: Nope ⟵ / ⟶ True (sourced facts) |
 
 Card model supports `answerType: 'binary' | 'multiple-choice'` (with
 `math-input` reserved for later), optional tiny `graphic`, and source fields.

@@ -3,6 +3,8 @@ import { scamCards } from './scamCards.js'
 import { quickMathCards } from './quickMath.js'
 import { weirdFactsCards } from './weirdFacts.js'
 import { animalFactsCards } from './animalFacts.js'
+import { historyHitsCards } from './historyHits.js'
+import { scienceSnacksCards } from './scienceSnacks.js'
 
 export const TRIVIA_MODES = {
   food: {
@@ -91,13 +93,42 @@ export const TRIVIA_MODES = {
       instruction: 'Swipe left for Nope. Swipe right for For Real.',
     },
   },
+  history: {
+    id: 'history',
+    title: 'History Hits',
+    shortTitle: 'History Hits',
+    subtitle: 'Order the past. Tap which came first — or when it happened.',
+    description: 'Which came first? Tap the answer.',
+    takeaway: 'When in doubt, anchor to a date you know and reason out from there.',
+    icon: '🏛️',
+    answerType: 'multiple-choice',
+    cards: historyHitsCards,
+    labels: {
+      instruction: 'Tap the correct answer.',
+    },
+  },
+  science: {
+    id: 'science',
+    title: 'Science Snacks',
+    shortTitle: 'Science Snacks',
+    subtitle: 'Bite-size science. Decide if each claim is true or nope.',
+    description: 'Bite-size science. Swipe True or Nope.',
+    takeaway: 'Intuition misleads in science — check for the classic myths.',
+    icon: '🔬',
+    answerType: 'binary',
+    cards: scienceSnacksCards,
+    labels: {
+      right: 'True',
+      left: 'Nope',
+      rightValue: 'true',
+      leftValue: 'false',
+      instruction: 'Swipe left for Nope. Swipe right for True.',
+    },
+  },
 }
 
 /** Decks shown as "Coming soon" — visible but not playable yet. */
-export const COMING_SOON_DECKS = [
-  { id: 'history', title: 'History Hits', shortTitle: 'History Hits', icon: '🏛️', description: 'Coming soon' },
-  { id: 'science', title: 'Science Snacks', shortTitle: 'Science Snacks', icon: '🔬', description: 'Coming soon' },
-]
+export const COMING_SOON_DECKS = []
 
 export const DIFFICULTIES = {
   easy: {

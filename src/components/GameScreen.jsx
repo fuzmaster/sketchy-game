@@ -8,6 +8,7 @@ export function GameScreen({
   card,
   cardIndex,
   totalCards,
+  cardNumber,
   hearts,
   score,
   streak,
@@ -189,9 +190,7 @@ export function GameScreen({
               </button>
             ))}
           </div>
-          <div className="mc-count">
-            {cardIndex + 1}/{totalCards}
-          </div>
+          <div className="mc-count">#{cardNumber ?? cardIndex + 1}</div>
         </>
       ) : (
         <>
@@ -220,9 +219,7 @@ export function GameScreen({
             <button className="choice-button fake-choice" onClick={() => commit(labels.leftValue)} disabled={!timerActive}>
               {labels.left}
             </button>
-            <span className="card-count">
-              {cardIndex + 1}/{totalCards}
-            </span>
+            <span className="card-count">#{cardNumber ?? cardIndex + 1}</span>
             <button className="choice-button fresh-choice" onClick={() => commit(labels.rightValue)} disabled={!timerActive}>
               {labels.right}
             </button>

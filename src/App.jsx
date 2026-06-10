@@ -65,10 +65,15 @@ export default function App() {
   const activeCardId = useRef(null)
   const feedbackTimeout = useRef(null)
   const toastTimeout = useRef(null)
+  // Endless-run "comeback" tracking: did the player rally on their last heart?
+  const reachedLastHeart = useRef(false)
+  const comebackRef = useRef(false)
 
   const activeProfile = profiles.find((profile) => profile.id === activeProfileId) || profiles[0]
   const currentCard = deck[cardIndex]
-  const duration = cardDuration(cardIndex, difficulty)
+  // Difficulty ramps with cards answered (not deck position), so the speed
+  // curve keeps progressing across an endless, recycling run.
+  const duration = cardDuration(results.length, difficulty)
   const bestScore = leaderboardService.bestScore(activeProfile, modeId)
   activeCardId.current = currentCard?.id ?? null
 
@@ -187,6 +192,8 @@ export default function App() {
     setComboBadge(null)
     setRunAchievements([])
     actionLocked.current = false
+    reachedLastHeart.current = false
+    comebackRef.current = false
     timeRemaining.current = cardDuration(0, difficulty) / 1000
     setTimerResetKey((key) => key + 1)
     const tutorialKey = `${STORAGE_KEYS.tutorialSeen}.${modeId}`
@@ -244,6 +251,7 @@ export default function App() {
       results: finalResults,
       heartsRemaining,
       totalCards: deck.length,
+      comeback: comebackRef.current,
     })
     setProfiles(authService.listProfiles())
     setRunAchievements(newAchievements)
@@ -260,12 +268,25 @@ export default function App() {
     setFeedback(null)
     actionLocked.current = false
 
-    if (nextHearts <= 0 || cardIndex + 1 >= deck.length) {
+    // Endless: a run ends only when hearts run out.
+    if (nextHearts <= 0) {
       endRun(nextScore, nextStats, nextResults, nextHearts)
       return
     }
 
-    setCardIndex((index) => index + 1)
+    if (cardIndex + 1 >= deck.length) {
+      // Reached the end of the current shuffle — reshuffle the whole pool and
+      // keep going, just avoiding an immediate repeat of the last card.
+      const pool = mode.cards.filter((card) => card.confidence === 'high')
+      let nextDeck = shuffle(pool)
+      if (nextDeck.length > 1 && nextDeck[0].id === deck[cardIndex].id) {
+        nextDeck = [...nextDeck.slice(1), nextDeck[0]]
+      }
+      setDeck(nextDeck)
+      setCardIndex(0)
+    } else {
+      setCardIndex((index) => index + 1)
+    }
     setTimerResetKey((key) => key + 1)
     setGameState('playing')
   }
@@ -281,6 +302,9 @@ export default function App() {
     const wasCorrect = !wasMissed && playerAnswer === resolvedCard.answer
     const nextStreak = wasCorrect ? streak + 1 : 0
     const nextHearts = !wasMissed && !wasCorrect ? hearts - 1 : hearts
+    // Comeback: rallying to a 5-streak after dropping to the last heart.
+    if (nextHearts === 1) reachedLastHeart.current = true
+    if (reachedLastHeart.current && nextStreak >= 5) comebackRef.current = true
     const earned = wasCorrect ? scoreForCorrect(timeRemaining.current, nextStreak) : 0
     const nextScore = score + earned
     const result = {
@@ -377,6 +401,7 @@ export default function App() {
               card={currentCard}
               cardIndex={cardIndex}
               totalCards={deck.length}
+              cardNumber={results.length + 1}
               hearts={hearts}
               score={score}
               streak={streak}
@@ -401,6 +426,7 @@ export default function App() {
             card={currentCard}
             cardIndex={cardIndex}
             totalCards={deck.length}
+            cardNumber={results.length + 1}
             hearts={hearts}
             score={score}
             streak={streak}

@@ -83,6 +83,7 @@ export const localProgressService = {
       missedInRun: stats.missed,
       completedDeck: heartsRemaining > 0, // survived the deck rather than running out of hearts
       heartsLost: MAX_HEARTS - heartsRemaining,
+      comeback: run.comeback === true,
       quickAnswers,
       reviewOpened: false,
     }
