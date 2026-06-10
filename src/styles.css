@@ -1527,3 +1527,51 @@ h2 {
     animation: none;
   }
 }
+
+/* ===== mascot moods (gameplay reactions) ================================= */
+.feedback-mascot {
+  margin: 0 auto 2px;
+}
+.mascot--happy .mascot-bob {
+  animation: mascot-celebrate 0.6s ease both;
+}
+.mascot--oops .mascot-bob {
+  animation: mascot-wince 0.5s ease both;
+}
+.mascot--sleepy .mascot-bob {
+  animation: mascot-sleepy 2.4s ease-in-out infinite;
+}
+.mascot-zzz {
+  animation: mascot-zzz-float 2.4s ease-in-out infinite;
+}
+@keyframes mascot-celebrate {
+  0% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-14px) scale(1.06); }
+  55% { transform: translateY(0) scale(0.98); }
+  75% { transform: translateY(-6px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes mascot-wince {
+  0%, 100% { transform: translateX(0) scale(1); }
+  20% { transform: translateX(-6px) scale(0.97); }
+  40% { transform: translateX(6px) scale(0.97); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+@keyframes mascot-sleepy {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+@keyframes mascot-zzz-float {
+  0% { opacity: 0.3; transform: translateY(4px); }
+  50% { opacity: 1; transform: translateY(-2px); }
+  100% { opacity: 0.3; transform: translateY(4px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot--happy .mascot-bob,
+  .mascot--oops .mascot-bob,
+  .mascot--sleepy .mascot-bob,
+  .mascot-zzz {
+    animation: none;
+  }
+}

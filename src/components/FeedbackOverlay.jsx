@@ -1,6 +1,11 @@
+import { Mascot } from './Mascot.jsx'
+
+const MOOD_BY_RESULT = { correct: 'happy', wrong: 'oops', missed: 'sleepy' }
+
 export function FeedbackOverlay({ result, labels }) {
   const card = result.card
   const isMultipleChoice = card.answerType === 'multiple-choice'
+  const mood = MOOD_BY_RESULT[result.resultType] || 'idle'
   const binaryLabel = {
     [labels.rightValue]: labels.right,
     [labels.leftValue]: labels.left,
@@ -11,6 +16,7 @@ export function FeedbackOverlay({ result, labels }) {
   return (
     <div className="feedback-layer" aria-live="polite">
       <div className={`feedback-card ${result.resultType}`}>
+        <Mascot mood={mood} size={72} className="feedback-mascot" />
         <h2>{title}</h2>
         <p className="feedback-answer">
           {result.resultType === 'missed' ? 'No points. Next one.' : 'Correct answer:'}{' '}
