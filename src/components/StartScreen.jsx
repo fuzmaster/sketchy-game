@@ -46,7 +46,7 @@ export function StartScreen({
 
   return (
     <div className="screen start-screen menu-screen">
-      <div className="brand-lockup compact">
+      <div className="brand-lockup compact hero-card">
         <Mascot size={112} />
         <div className="wm" role="img" aria-label="Gut Check">
           <span className="wm-rim" aria-hidden="true">Gut Check</span>
@@ -58,6 +58,7 @@ export function StartScreen({
       </div>
 
       <section className="launch-panel">
+        <div className="sec-label">Player</div>
         <div className="profile-strip">
           <button
             type="button"
@@ -109,6 +110,7 @@ export function StartScreen({
           <button type="submit">Add</button>
         </form>
 
+        <div className="sec-label">Choose a deck</div>
         <div className="deck-grid" aria-label="Choose deck">
           {Object.values(TRIVIA_MODES).map((item) => (
             <button
@@ -138,6 +140,7 @@ export function StartScreen({
           ))}
         </div>
 
+        <div className="sec-label">Difficulty</div>
         <div className="difficulty-tabs" aria-label="Choose difficulty">
           {Object.values(DIFFICULTIES).map((item) => (
             <button
@@ -157,8 +160,8 @@ export function StartScreen({
           <strong>Best {bestScore.toLocaleString()}</strong>
         </div>
 
-        <button className="primary-button" onClick={onPlay}>
-          Play
+        <button className="primary-button play-cta" onClick={onPlay}>
+          Play <span aria-hidden="true">▸</span>
         </button>
 
         <div className="menu-actions">
