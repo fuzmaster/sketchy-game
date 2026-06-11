@@ -3,8 +3,15 @@ import { COMING_SOON_DECKS, DIFFICULTIES, TRIVIA_MODES } from '../game/triviaMod
 import { ACHIEVEMENTS } from '../game/achievements.js'
 import { AVATARS, DEFAULT_AVATAR_ID, getAvatar } from '../game/avatars.js'
 import { AvatarBadge, AvatarPicker } from './AvatarPicker.jsx'
-import { Mascot } from './Mascot.jsx'
 import { gusBadge } from '../brand/gusArt.js'
+import gutCheckMascot from '../assets/gut-check-mascot.png'
+import freshOrFakeDeck from '../assets/fresh-or-fake-deck.png'
+import scamSpotterDeck from '../assets/scam-spotter-deck.png'
+
+const deckImages = {
+  food: freshOrFakeDeck,
+  scam: scamSpotterDeck,
+}
 
 export function StartScreen({
   activeProfile,
@@ -47,7 +54,7 @@ export function StartScreen({
   return (
     <div className="screen start-screen menu-screen">
       <div className="brand-lockup compact hero-card">
-        <Mascot size={112} />
+        <img className="hero-mascot-art" src={gutCheckMascot} alt="" aria-hidden="true" />
         <div className="wm" role="img" aria-label="Gut Check">
           <span className="wm-rim" aria-hidden="true">Gut Check</span>
           <span className="wm-ink">
@@ -114,12 +121,16 @@ export function StartScreen({
         <div className="deck-grid" aria-label="Choose deck">
           {Object.values(TRIVIA_MODES).map((item) => (
             <button
-              className={`deck-card ${modeId === item.id ? 'selected' : ''}`}
+              className={`deck-card ${modeId === item.id ? 'selected' : ''} ${deckImages[item.id] ? 'has-deck-art' : ''}`}
               type="button"
               key={item.id}
               onClick={() => onModeChange(item.id)}
             >
-              <span className="deck-badge" aria-hidden="true" dangerouslySetInnerHTML={{ __html: gusBadge(item.id, { size: 44 }) }} />
+              {deckImages[item.id] ? (
+                <img className="deck-art" src={deckImages[item.id]} alt="" aria-hidden="true" />
+              ) : (
+                <span className="deck-badge" aria-hidden="true" dangerouslySetInnerHTML={{ __html: gusBadge(item.id, { size: 44 }) }} />
+              )}
               <strong>{item.shortTitle}</strong>
               <small>{item.description}</small>
             </button>
