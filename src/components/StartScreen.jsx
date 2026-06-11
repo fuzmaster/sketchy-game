@@ -4,6 +4,7 @@ import { ACHIEVEMENTS } from '../game/achievements.js'
 import { AVATARS, DEFAULT_AVATAR_ID, getAvatar } from '../game/avatars.js'
 import { AvatarBadge, AvatarPicker } from './AvatarPicker.jsx'
 import { Mascot } from './Mascot.jsx'
+import { gusBadge } from '../brand/gusArt.js'
 
 export function StartScreen({
   activeProfile,
@@ -116,7 +117,7 @@ export function StartScreen({
               key={item.id}
               onClick={() => onModeChange(item.id)}
             >
-              <span>{item.icon}</span>
+              <span className="deck-badge" aria-hidden="true" dangerouslySetInnerHTML={{ __html: gusBadge(item.id, { size: 44 }) }} />
               <strong>{item.shortTitle}</strong>
               <small>{item.description}</small>
             </button>
