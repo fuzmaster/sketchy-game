@@ -46,8 +46,13 @@ export function StartScreen({
   return (
     <div className="screen start-screen menu-screen">
       <div className="brand-lockup compact">
-        <Mascot size={108} />
-        <h1>Gut Check</h1>
+        <Mascot size={112} />
+        <div className="wm" role="img" aria-label="Gut Check">
+          <span className="wm-rim" aria-hidden="true">Gut Check</span>
+          <span className="wm-ink">
+            <span className="g">Gut</span> <span className="c">Check</span>
+          </span>
+        </div>
         <p>Trust your gut. Swipe fast. Learn something.</p>
       </div>
 

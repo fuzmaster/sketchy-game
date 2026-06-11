@@ -1,13 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Gut Check">
-  <rect x="38" y="38" width="436" height="436" rx="120" fill="#00A79B" stroke="#1F2328" stroke-width="22"/>
-  <circle cx="150" cy="300" r="32" fill="#FF4D2D" opacity="0.5"/>
-  <circle cx="362" cy="300" r="32" fill="#FF4D2D" opacity="0.5"/>
-  <circle cx="192" cy="248" r="58" fill="#FFF6EB" stroke="#1F2328" stroke-width="16"/>
-  <circle cx="320" cy="248" r="58" fill="#FFF6EB" stroke="#1F2328" stroke-width="16"/>
-  <circle cx="202" cy="258" r="25" fill="#1F2328"/>
-  <circle cx="330" cy="258" r="25" fill="#1F2328"/>
-  <circle cx="212" cy="248" r="9" fill="#FFF6EB"/>
-  <circle cx="340" cy="248" r="9" fill="#FFF6EB"/>
-  <path d="M210 330 q46 42 92 0" fill="none" stroke="#1F2328" stroke-width="18" stroke-linecap="round"/>
-  <circle cx="408" cy="118" r="28" fill="#FF4D2D" stroke="#1F2328" stroke-width="12"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="512" height="512">
+    <rect x="8" y="8" width="224" height="224" rx="54" fill="#00A79B" stroke="#1F2328" stroke-width="11"/>
+    <circle cx="30" cy="30" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="30" cy="76" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="30" cy="122" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="30" cy="168" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="30" cy="214" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="76" cy="30" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="76" cy="76" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="76" cy="122" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="76" cy="168" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="76" cy="214" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="122" cy="30" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="122" cy="76" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="122" cy="122" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="122" cy="168" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="122" cy="214" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="168" cy="30" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="168" cy="76" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="168" cy="122" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="168" cy="168" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="168" cy="214" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="214" cy="30" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="214" cy="76" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="214" cy="122" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="214" cy="168" r="3" fill="#FFF6EB" opacity="0.12"/><circle cx="214" cy="214" r="3" fill="#FFF6EB" opacity="0.12"/>
+    <ellipse cx="120" cy="78" rx="60" ry="32" fill="#FFF6EB" opacity="0.12"/>
+    <ellipse cx="90" cy="102" rx="30" ry="38" fill="#FFF6EB" stroke="#1F2328" stroke-width="8"/>
+    <ellipse cx="90" cy="106" rx="23" ry="31" fill="#17283c"/>
+    <ellipse cx="90" cy="110" rx="12" ry="17" fill="#0c141d"/>
+    <circle cx="82" cy="90" r="9" fill="#FFF6EB"/><circle cx="98" cy="112" r="5" fill="#FFF6EB" opacity="0.9"/><ellipse cx="158" cy="102" rx="30" ry="38" fill="#FFF6EB" stroke="#1F2328" stroke-width="8"/>
+    <ellipse cx="158" cy="106" rx="23" ry="31" fill="#17283c"/>
+    <ellipse cx="158" cy="110" rx="12" ry="17" fill="#0c141d"/>
+    <circle cx="150" cy="90" r="9" fill="#FFF6EB"/><circle cx="166" cy="112" r="5" fill="#FFF6EB" opacity="0.9"/>
+    <g opacity="0.88"><ellipse cx="52" cy="138" rx="17" ry="12" fill="#FF4D2D"/></g>
+    <g opacity="0.88"><ellipse cx="196" cy="138" rx="17" ry="12" fill="#FF4D2D"/></g>
+    <path d="M104 150 q8 11 16 0 q8 11 16 0" fill="none" stroke="#1F2328" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="124" cy="198" r="26" fill="#FFF6EB" stroke="#1F2328" stroke-width="7.5"/>
+    <path d="M112 198 l8 9 15 -19" fill="none" stroke="#00A878" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>

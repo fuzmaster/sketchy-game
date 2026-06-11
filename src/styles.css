@@ -16,8 +16,13 @@
   --red: var(--fake);
   --app-bg: var(--gut-teal);
   --footer-bg: var(--gut-teal);
+  --ink: var(--charcoal);
   --shadow: 0 6px 0 rgba(31, 35, 40, 0.18), 0 18px 36px rgba(31, 35, 40, 0.16);
-  font-family: "Trebuchet MS", "Arial Rounded MT Bold", system-ui, sans-serif;
+  /* brand fonts (Gut Check Brand Sheet): Nunito body · Baloo 2 head · Luckiest Guy display */
+  --ff-display: "Luckiest Guy", system-ui, sans-serif;
+  --ff-head: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --ff-body: "Nunito", "Trebuchet MS", system-ui, sans-serif;
+  font-family: var(--ff-body);
   color: var(--charcoal);
   background: var(--gut-teal);
 }
@@ -1572,6 +1577,133 @@ h2 {
   .mascot--oops .mascot-bob,
   .mascot--sleepy .mascot-bob,
   .mascot-zzz {
+    animation: none;
+  }
+}
+
+/* ===== brand typography (Baloo 2 head · Luckiest Guy display) ============= */
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--ff-body);
+}
+h1,
+h2,
+h3,
+.primary-button,
+.secondary-button,
+.mini-button,
+.ghost-button,
+.choice-button,
+.mc-choice,
+.deck-card strong,
+.difficulty-tabs button,
+.score-chip,
+.score-chip strong,
+.stat-card strong,
+.pill-tag,
+.menu-summary,
+.tagline,
+.timer-copy,
+.achievements-head h2,
+.profile-strip strong,
+.profile-form button,
+.combo-badge {
+  font-family: var(--ff-head);
+}
+.primary-button,
+.result-burst h1,
+.feedback-card h2 {
+  font-family: var(--ff-display);
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}
+
+/* ===== wordmark (Gut = orange · Check = teal · cream rim) ================= */
+.wm {
+  position: relative;
+  display: inline-block;
+  font-family: var(--ff-head);
+  font-weight: 800;
+  transform: skew(-6deg) rotate(-2deg);
+  line-height: 0.86;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  filter: drop-shadow(0 5px 0 rgba(31, 35, 40, 0.18)) drop-shadow(0 10px 13px rgba(31, 35, 40, 0.22));
+}
+.wm .wm-rim {
+  position: absolute;
+  inset: 0;
+  color: var(--cream);
+  -webkit-text-stroke: 0.22em var(--cream);
+  paint-order: stroke fill;
+  z-index: 1;
+}
+.wm .wm-ink {
+  position: relative;
+  z-index: 2;
+  -webkit-text-stroke: 0.085em var(--charcoal);
+  paint-order: stroke fill;
+}
+.wm .wm-ink .g {
+  color: var(--fake);
+}
+.wm .wm-ink .c {
+  color: var(--gut-teal);
+}
+.wm.on-teal .wm-rim {
+  color: var(--cream);
+  -webkit-text-stroke-color: var(--cream);
+}
+.brand-lockup .wm {
+  font-size: 46px;
+}
+
+/* ===== Gus mascot motion (matches brand: bob + blink, pop on celebrate) === */
+.mascot {
+  display: block;
+  overflow: visible;
+  line-height: 0;
+}
+.mascot svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.gus-bob {
+  animation: gus-bob 3.2s ease-in-out infinite;
+  transform-origin: center bottom;
+}
+.gus-pop {
+  animation: gus-pop 0.9s ease both;
+  transform-origin: center bottom;
+}
+.gus-eyes {
+  animation: gus-blink 4.6s infinite;
+}
+.mascot:not(.mascot--idle) .gus-eyes {
+  animation: none;
+}
+@keyframes gus-bob {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+@keyframes gus-pop {
+  0% { transform: scale(0.7) rotate(-5deg); }
+  55% { transform: scale(1.08) rotate(3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes gus-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gus-bob,
+  .gus-pop,
+  .gus-eyes {
     animation: none;
   }
 }
